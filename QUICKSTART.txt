@@ -1,0 +1,175 @@
+====================================================================
+QUICK START GUIDE - Diazotroph Classification Pipeline
+====================================================================
+
+This is a complete, ready-to-run pipeline for classifying cyanobacteria
+genomes as diazotrophs based on gene family patterns.
+
+====================================================================
+FILES INCLUDED
+====================================================================
+
+Scripts:
+  01_prepare_data.py               - Prepare and label genomes
+  02_download_proteins.py          - Download protein sequences
+  03_create_gene_families.py       - Cluster into gene families
+  04_classify.py                   - Machine learning classification
+  05_analyze_feature_directionality.py - Analyze feature effects
+  run_pipeline.sh                  - SLURM submission script
+
+Data:
+  nif_hdk_hits_enriched_with_quality_checkm.csv - Input genome data
+
+Documentation:
+  README.txt                       - Full documentation
+  QUICKSTART.txt                   - This file
+
+====================================================================
+HOW TO RUN (3 STEPS)
+====================================================================
+
+1. UPLOAD TO HPC
+   -------------
+   Transfer this entire directory to your HPC cluster:
+   
+   scp -r diazotroph_classification/ username@hpc.address:~/
+
+2. SUBMIT JOB
+   ----------
+   SSH to the HPC and submit the job:
+   
+   ssh username@hpc.address
+   cd ~/diazotroph_classification
+   sbatch run_pipeline.sh
+
+3. GET RESULTS
+   -----------
+   After job completes (4-9 hours), download results:
+   
+   scp username@hpc.address:~/diazotroph_classification/results.tar.gz .
+   tar -xzf results.tar.gz
+
+====================================================================
+MONITORING YOUR JOB
+====================================================================
+
+Check job status:
+  squeue -u your_username
+
+View output in real-time:
+  tail -f diazotroph_classification_*.out
+
+View errors:
+  tail -f diazotroph_classification_*.err
+
+====================================================================
+KEY RESULTS TO CHECK
+====================================================================
+
+After completion, look at these files in the results/ directory:
+
+1. classification_summary.csv
+   → Overall model performance (accuracy, F1, ROC-AUC)
+
+2. roc_curves.png
+   → Visual comparison of all models
+
+3. feature_directionality_summary.csv
+   → Top gene families and their associations
+
+4. feature_effects.png
+   → Visualization of important features
+
+====================================================================
+WHAT THE PIPELINE DOES
+====================================================================
+
+1. Filters for ONLY "Complete Genome" assembly level (~478 genomes)
+   Labels as diazotroph if nifH, D, K all have e-value < 1e-50
+   
+2. Downloads protein sequences from NCBI for all genomes
+   NOTE: Download may fail on compute nodes due to network restrictions
+   See DOWNLOAD_TROUBLESHOOTING.txt if automated download fails
+   
+3. Clusters proteins into gene families using MMseqs2
+   - 80% sequence identity
+   - Keeps families with ≥40 genomes (or 10% of available genomes)
+   
+4. Removes pure families (>90% or <10% diazotroph)
+   These aren't useful for classification
+
+5. Trains classification models:
+   - Random Forest
+   - Gradient Boosting  
+   - Logistic Regression
+   - XGBoost
+   
+   Uses genus-level cross-validation to test generalization
+
+6. Identifies which gene families are associated with:
+   - Diazotrophy (positive features)
+   - Non-diazotrophy (negative features)
+
+====================================================================
+EXPECTED RESULTS
+====================================================================
+
+Based on the data structure:
+- ~478 complete genomes (~200 diazotrophs, ~278 non-diazotrophs)
+- ~1000-5000 gene families (after filtering)
+- Classification accuracy: typically 75-90% (genus-level CV)
+- Clear separation of diazotroph vs. non-diazotroph features
+
+NOTE: If protein downloads fail for many genomes, results will be
+based on available data. Minimum 100 genomes recommended.
+
+====================================================================
+TROUBLESHOOTING
+====================================================================
+
+Problem: Protein downloads fail (all show "Failed")
+Solution: This is common on HPC compute nodes with network restrictions
+          See DOWNLOAD_TROUBLESHOOTING.txt for solutions, including:
+          - Run from login node instead of compute node
+          - Use NCBI datasets CLI tool
+          - Manual download methods
+          Most common fix: Run 02_download_proteins.py from login node
+
+Problem: Job fails with memory error
+Solution: Edit run_pipeline.sh, increase --mem=64G to --mem=128G
+
+Problem: Protein downloads fail
+Solution: Some genomes may not be available. Pipeline continues
+          with available genomes. Check failed_downloads.txt
+
+Problem: Job takes too long
+Solution: Increase --cpus-per-task=16 to --cpus-per-task=32
+          in run_pipeline.sh for faster clustering
+
+Problem: XGBoost not found
+Solution: Pipeline will skip XGBoost and run other models
+
+====================================================================
+CUSTOMIZATION
+====================================================================
+
+To change parameters, edit the scripts before running:
+
+Gene family clustering (03_create_gene_families.py):
+  - identity = 0.8        # Change to 0.7 for more clusters
+  - min_genomes = 40      # Change to 30 for more families
+
+Classification (04_classify.py):
+  - threshold = 0.9       # Purity threshold (0.8 = keep more)
+  - n_folds = 5           # Cross-validation folds
+
+====================================================================
+NEED HELP?
+====================================================================
+
+1. Check README.txt for detailed documentation
+2. View job output: cat diazotroph_classification_*.out
+3. View errors: cat diazotroph_classification_*.err
+4. Contact your HPC support if cluster-specific issues
+
+====================================================================

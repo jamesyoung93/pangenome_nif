@@ -1,0 +1,17 @@
+Traceback (most recent call last):
+  File "/mmfs1/scratch/jacks.local/jyoung67391/diazotroph_classification/08_build_narrative_table.py", line 180, in <module>
+    main()
+  File "/mmfs1/scratch/jacks.local/jyoung67391/diazotroph_classification/08_build_narrative_table.py", line 145, in main
+    dirf = load_directionality(DIR_FULL)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mmfs1/scratch/jacks.local/jyoung67391/diazotroph_classification/08_build_narrative_table.py", line 61, in load_directionality
+    return df[keep].rename(columns={"importance": "importance_across_models"})
+           ~~^^^^^^
+  File "/mmfs1/cm/shared/apps_local/python/3.12/lib/python3.12/site-packages/pandas/core/frame.py", line 4108, in __getitem__
+    indexer = self.columns._get_indexer_strict(key, "columns")[1]
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mmfs1/cm/shared/apps_local/python/3.12/lib/python3.12/site-packages/pandas/core/indexes/base.py", line 6200, in _get_indexer_strict
+    self._raise_if_missing(keyarr, indexer, axis_name)
+  File "/mmfs1/cm/shared/apps_local/python/3.12/lib/python3.12/site-packages/pandas/core/indexes/base.py", line 6252, in _raise_if_missing
+    raise KeyError(f"{not_found} not in index")
+KeyError: "['importance'] not in index"

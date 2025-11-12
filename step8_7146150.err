@@ -1,0 +1,4 @@
+  File "/mmfs1/scratch/jacks.local/jyoung67391/diazotroph_classification/08_build_narrative_table.py", line 128
+    return s if len(s) <= 6000 else s[:6000] + " �"
+                                               ^^
+SyntaxError: (unicode error) 'utf-8' codec can't decode byte 0x85 in position 1: invalid start byte

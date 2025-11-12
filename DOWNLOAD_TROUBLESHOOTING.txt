@@ -1,0 +1,241 @@
+===============================================================================
+PROTEIN DOWNLOAD TROUBLESHOOTING GUIDE
+===============================================================================
+
+The automated download script failed on your HPC. This is common due to network
+restrictions on compute nodes. Here are several working alternatives:
+
+===============================================================================
+OPTION 1: Download from Login Node (RECOMMENDED)
+===============================================================================
+
+The issue is likely that compute nodes can't access external networks.
+Run the download from the login node instead:
+
+1. SSH to your HPC
+2. Navigate to the project directory
+3. Run the download script:
+
+   cd ~/diazotroph_classification
+   python3 02_download_proteins.py
+
+This should work because login nodes typically have internet access.
+
+You can run it in a screen/tmux session to keep it running if you disconnect:
+
+   screen -S download
+   python3 02_download_proteins.py
+   # Detach with Ctrl+A then D
+   # Reattach later with: screen -r download
+
+===============================================================================
+OPTION 2: Batch Download Using NCBI Datasets CLI
+===============================================================================
+
+If you have the NCBI datasets tool installed, you can batch download:
+
+# Load module (if available)
+module load ncbi-datasets  # or similar
+
+# Batch download all genomes
+datasets download genome accession \
+  --inputfile genome_accessions.txt \
+  --include protein \
+  --filename all_proteins.zip
+
+# Extract proteins
+unzip all_proteins.zip
+mkdir -p protein_sequences
+
+# Move and rename protein files
+for dir in ncbi_dataset/data/*/; do
+  acc=$(basename "$dir")
+  if [ -f "${dir}protein.faa" ]; then
+    cp "${dir}protein.faa" "protein_sequences/${acc}.faa"
+  fi
+done
+
+===============================================================================
+OPTION 3: Download on Local Machine Then Transfer
+===============================================================================
+
+If HPC network is very restricted, download on your local machine:
+
+A. Install NCBI Datasets locally:
+   https://www.ncbi.nlm.nih.gov/datasets/docs/v2/download-and-install/
+
+B. Run download script locally:
+   # Copy the script and accession list to your computer
+   python3 02_download_proteins.py
+
+C. Transfer to HPC:
+   rsync -avz protein_sequences/ username@hpc:/path/to/diazotroph_classification/protein_sequences/
+
+===============================================================================
+OPTION 4: Manual Batch Script for FTP Download
+===============================================================================
+
+Create a bash script to download from NCBI FTP:
+
+#!/bin/bash
+# save as: download_proteins.sh
+
+mkdir -p protein_sequences
+
+while IFS= read -r acc; do
+  echo "Downloading $acc..."
+  
+  # Parse accession for directory structure
+  num=${acc#GCF_}
+  num=${num#GCA_}
+  num=${num%.*}
+  
+  dir1=${num:0:3}
+  dir2=${num:3:3}
+  dir3=${num:6:3}
+  
+  prefix=$(echo $acc | cut -d_ -f1)
+  
+  # Try HTTPS first
+  url="https://ftp.ncbi.nlm.nih.gov/genomes/all/${prefix}/${dir1}/${dir2}/${dir3}/${acc}/${acc}_protein.faa.gz"
+  
+  wget -q -O "protein_sequences/${acc}.faa.gz" "$url"
+  
+  if [ $? -eq 0 ]; then
+    gunzip "protein_sequences/${acc}.faa.gz"
+    echo "  Success"
+  else
+    # Try FTP protocol
+    url="ftp://ftp.ncbi.nlm.nih.gov/genomes/all/${prefix}/${dir1}/${dir2}/${dir3}/${acc}/${acc}_protein.faa.gz"
+    wget -q -O "protein_sequences/${acc}.faa.gz" "$url"
+    
+    if [ $? -eq 0 ]; then
+      gunzip "protein_sequences/${acc}.faa.gz"
+      echo "  Success (FTP)"
+    else
+      echo "  Failed"
+    fi
+  fi
+  
+  sleep 0.5  # Rate limiting
+done < genome_accessions.txt
+
+# Make executable and run
+chmod +x download_proteins.sh
+./download_proteins.sh
+
+===============================================================================
+OPTION 5: Use Aspera for Fast Download
+===============================================================================
+
+If available, Aspera is much faster than FTP:
+
+module load aspera  # if available
+
+while IFS= read -r acc; do
+  ascp -i ~/.aspera/cli/etc/asperaweb_id_dsa.openssh \
+    -k1 -QT -l 300m \
+    anonftp@ftp.ncbi.nlm.nih.gov:/genomes/all/GCF/${acc:4:3}/${acc:7:3}/${acc:10:3}/${acc}/${acc}_protein.faa.gz \
+    protein_sequences/
+  gunzip "protein_sequences/${acc}_protein.faa.gz"
+  mv "protein_sequences/${acc}_protein.faa" "protein_sequences/${acc}.faa"
+done < genome_accessions.txt
+
+===============================================================================
+OPTION 6: NCBI Web Interface (Small Batches)
+===============================================================================
+
+For smaller sets or if scripts fail:
+
+1. Go to: https://www.ncbi.nlm.nih.gov/assembly/
+2. Search for each accession
+3. Download "Protein" file
+4. Place in protein_sequences/ directory
+
+Or use NCBI's batch download interface:
+1. Go to: https://www.ncbi.nlm.nih.gov/datasets/genome/
+2. Upload genome_accessions.txt
+3. Download all proteins as zip
+4. Extract to protein_sequences/
+
+===============================================================================
+TROUBLESHOOTING SPECIFIC ERRORS
+===============================================================================
+
+ERROR: "Connection refused" or "Network unreachable"
+→ Compute nodes can't access internet
+→ Use login node (Option 1)
+
+ERROR: "Permission denied" or "Cannot write"
+→ Check directory permissions
+→ Run: chmod 755 protein_sequences/
+
+ERROR: "Command not found: wget/curl/datasets"
+→ Install tools or use module system
+→ Check: module avail | grep -E "wget|curl|datasets"
+
+ERROR: Downloads timeout
+→ Increase timeout in script
+→ Use slower rate limiting
+→ Download in smaller batches
+
+ERROR: Files corrupted or empty
+→ Check disk space: df -h
+→ Verify file integrity: file protein_sequences/*.faa
+→ Re-download failed files
+
+===============================================================================
+VERIFYING DOWNLOADS
+===============================================================================
+
+After downloading, check your downloads:
+
+# Count downloaded files
+ls protein_sequences/*.faa | wc -l
+
+# Check for empty files
+find protein_sequences -name "*.faa" -size 0
+
+# Verify file formats
+head protein_sequences/*.faa | head -20
+
+# Expected format:
+# >protein_id ...
+# MKVLWAALLVTFLAGCQAKV...
+
+===============================================================================
+PROCEEDING WITH PARTIAL DOWNLOADS
+===============================================================================
+
+The pipeline can work with partial downloads! If you have at least 100-200
+genomes, you can continue:
+
+1. Check how many you have:
+   ls protein_sequences/*.faa | wc -l
+
+2. If >= 100, proceed to Step 3:
+   python3 03_create_gene_families.py 16
+
+3. The script will automatically:
+   - Use only genomes with downloaded proteins
+   - Adjust minimum family size accordingly
+   - Continue with available data
+
+Minimum recommended: 100 genomes for meaningful analysis
+Ideal: 300+ genomes for robust results
+
+===============================================================================
+NEED MORE HELP?
+===============================================================================
+
+1. Check HPC documentation for network access policies
+2. Contact HPC support about internet access from compute nodes
+3. Ask about preferred methods for downloading NCBI data
+4. Check if HPC has a dedicated data transfer node
+
+Many HPCs have specific data transfer nodes with better network access:
+   ssh username@data-transfer-node.hpc.edu
+   cd ~/diazotroph_classification
+   python3 02_download_proteins.py
+
+===============================================================================

@@ -1,0 +1,334 @@
+cluster gene_families_DB gene_families_cluster gene_families_tmp --min-seq-id 0.8 -c 0.8 --threads 16 --cluster-mode 0 --cov-mode 0 
+
+MMseqs Version:                     	cfbea63affb7071bb4f3967bc60d15e1191b85da
+Substitution matrix                 	aa:blosum62.out,nucl:nucleotide.out
+Seed substitution matrix            	aa:VTML80.out,nucl:nucleotide.out
+Sensitivity                         	4
+k-mer length                        	0
+Target search mode                  	0
+k-score                             	seq:2147483647,prof:2147483647
+Alphabet size                       	aa:21,nucl:5
+Max sequence length                 	65535
+Max results per query               	20
+Split database                      	0
+Split mode                          	2
+Split memory limit                  	0
+Coverage threshold                  	0.8
+Coverage mode                       	0
+Compositional bias                  	1
+Compositional bias                  	1
+Diagonal scoring                    	true
+Exact k-mer matching                	0
+Mask residues                       	1
+Mask residues probability           	0.9
+Mask lower case residues            	0
+Minimum diagonal score              	15
+Selected taxa                       	
+Include identical seq. id.          	false
+Spaced k-mers                       	1
+Preload mode                        	0
+Pseudo count a                      	substitution:1.100,context:1.400
+Pseudo count b                      	substitution:4.100,context:5.800
+Spaced k-mer pattern                	
+Local temporary path                	
+Threads                             	16
+Compressed                          	0
+Verbosity                           	3
+Add backtrace                       	false
+Alignment mode                      	3
+Alignment mode                      	0
+Allow wrapped scoring               	false
+E-value threshold                   	0.001
+Seq. id. threshold                  	0.8
+Min alignment length                	0
+Seq. id. mode                       	0
+Alternative alignments              	0
+Max reject                          	2147483647
+Max accept                          	2147483647
+Score bias                          	0
+Realign hits                        	false
+Realign score bias                  	-0.2
+Realign max seqs                    	2147483647
+Correlation score weight            	0
+Gap open cost                       	aa:11,nucl:5
+Gap extension cost                  	aa:1,nucl:2
+Zdrop                               	40
+Rescore mode                        	0
+Remove hits by seq. id. and coverage	false
+Sort results                        	0
+Cluster mode                        	0
+Max connected component depth       	1000
+Similarity type                     	2
+Weight file name                    	
+Cluster Weight threshold            	0.9
+Single step clustering              	false
+Cascaded clustering steps           	3
+Cluster reassign                    	false
+Remove temporary files              	false
+Force restart with latest tmp       	false
+MPI runner                          	
+k-mers per sequence                 	21
+Scale k-mers per sequence           	aa:0.000,nucl:0.200
+Adjust k-mer length                 	false
+Shift hash                          	67
+Include only extendable             	false
+Skip repeating k-mers               	false
+
+Set cluster sensitivity to -s 1.000000
+Set cluster iterations to 1
+linclust gene_families_DB gene_families_tmp/7164836658967419980/clu_redundancy gene_families_tmp/7164836658967419980/linclust --cluster-mode 0 --max-iterations 1000 --similarity-type 2 --threads 16 --compressed 0 -v 3 --cluster-weight-threshold 0.9 --sub-mat 'aa:blosum62.out,nucl:nucleotide.out' -a 0 --alignment-mode 3 --alignment-output-mode 0 --wrapped-scoring 0 -e 0.001 --min-seq-id 0.8 --min-aln-len 0 --seq-id-mode 0 --alt-ali 0 -c 0.8 --cov-mode 0 --max-seq-len 65535 --comp-bias-corr 0 --comp-bias-corr-scale 1 --max-rejected 2147483647 --max-accept 2147483647 --add-self-matches 0 --db-load-mode 0 --pca substitution:1.100,context:1.400 --pcb substitution:4.100,context:5.800 --score-bias 0 --realign 0 --realign-score-bias -0.2 --realign-max-seqs 2147483647 --corr-score-weight 0 --gap-open aa:11,nucl:5 --gap-extend aa:1,nucl:2 --zdrop 40 --alph-size aa:13,nucl:5 --kmer-per-seq 21 --spaced-kmer-mode 1 --kmer-per-seq-scale aa:0.000,nucl:0.200 --adjust-kmer-len 0 --mask 0 --mask-prob 0.9 --mask-lower-case 0 -k 0 --hash-shift 67 --split-memory-limit 0 --include-only-extendable 0 --ignore-multi-kmer 0 --rescore-mode 0 --filter-hits 0 --sort-results 0 --remove-tmp-files 0 --force-reuse 0 
+
+kmermatcher gene_families_DB gene_families_tmp/7164836658967419980/linclust/4579891242995182100/pref --sub-mat 'aa:blosum62.out,nucl:nucleotide.out' --alph-size aa:13,nucl:5 --min-seq-id 0.8 --kmer-per-seq 21 --spaced-kmer-mode 1 --kmer-per-seq-scale aa:0.000,nucl:0.200 --adjust-kmer-len 0 --mask 0 --mask-prob 0.9 --mask-lower-case 0 --cov-mode 0 -k 0 -c 0.8 --max-seq-len 65535 --hash-shift 67 --split-memory-limit 0 --include-only-extendable 0 --ignore-multi-kmer 0 --threads 16 --compressed 0 -v 3 --cluster-weight-threshold 0.9 
+
+kmermatcher gene_families_DB gene_families_tmp/7164836658967419980/linclust/4579891242995182100/pref --sub-mat 'aa:blosum62.out,nucl:nucleotide.out' --alph-size aa:13,nucl:5 --min-seq-id 0.8 --kmer-per-seq 21 --spaced-kmer-mode 1 --kmer-per-seq-scale aa:0.000,nucl:0.200 --adjust-kmer-len 0 --mask 0 --mask-prob 0.9 --mask-lower-case 0 --cov-mode 0 -k 0 -c 0.8 --max-seq-len 65535 --hash-shift 67 --split-memory-limit 0 --include-only-extendable 0 --ignore-multi-kmer 0 --threads 16 --compressed 0 -v 3 --cluster-weight-threshold 0.9 
+
+Database size: 1743575 type: Aminoacid
+Reduced amino acid alphabet: (A S T) (C) (D B N) (E Q Z) (F Y) (G) (H) (I V) (K R) (L J M) (P) (W) (X) 
+
+Generate k-mers list for 1 split
+[=================================================================] 1.74M 1s 60ms
+Sort kmer 0h 0m 0s 504ms
+Sort by rep. sequence 0h 0m 0s 240ms
+Time for fill: 0h 0m 0s 346ms
+Time for merging to pref: 0h 0m 0s 0ms
+Time for processing: 0h 0m 2s 700ms
+rescorediagonal gene_families_DB gene_families_DB gene_families_tmp/7164836658967419980/linclust/4579891242995182100/pref gene_families_tmp/7164836658967419980/linclust/4579891242995182100/pref_rescore1 --sub-mat 'aa:blosum62.out,nucl:nucleotide.out' --rescore-mode 0 --wrapped-scoring 0 --filter-hits 0 -e 0.001 -c 0.8 -a 0 --cov-mode 0 --min-seq-id 0.8 --min-aln-len 0 --seq-id-mode 0 --add-self-matches 0 --sort-results 0 --db-load-mode 0 --threads 16 --compressed 0 -v 3 
+
+[=================================================================] 1.74M 0s 951ms
+Time for merging to pref_rescore1: 0h 0m 0s 387ms
+Time for processing: 0h 0m 1s 722ms
+clust gene_families_DB gene_families_tmp/7164836658967419980/linclust/4579891242995182100/pref_rescore1 gene_families_tmp/7164836658967419980/linclust/4579891242995182100/pre_clust --cluster-mode 0 --max-iterations 1000 --similarity-type 2 --threads 16 --compressed 0 -v 3 --cluster-weight-threshold 0.9 
+
+Clustering mode: Set Cover
+[=================================================================] 1.74M 0s 130ms
+Sort entries
+Find missing connections
+Found 2341705 new connections.
+Reconstruct initial order
+[=================================================================] 1.74M 0s 135ms
+Add missing connections
+[=================================================================] 1.74M 0s 83ms
+
+Time for read in: 0h 0m 0s 451ms
+Total time: 0h 0m 0s 677ms
+
+Size of the sequence database: 1743575
+Size of the alignment database: 1743575
+Number of clusters: 689502
+
+Writing results 0h 0m 0s 75ms
+Time for merging to pre_clust: 0h 0m 0s 0ms
+Time for processing: 0h 0m 0s 904ms
+createsubdb gene_families_tmp/7164836658967419980/linclust/4579891242995182100/order_redundancy gene_families_DB gene_families_tmp/7164836658967419980/linclust/4579891242995182100/input_step_redundancy -v 3 --subdb-mode 1 
+
+Time for merging to input_step_redundancy: 0h 0m 0s 0ms
+Time for processing: 0h 0m 0s 172ms
+createsubdb gene_families_tmp/7164836658967419980/linclust/4579891242995182100/order_redundancy gene_families_tmp/7164836658967419980/linclust/4579891242995182100/pref gene_families_tmp/7164836658967419980/linclust/4579891242995182100/pref_filter1 -v 3 --subdb-mode 1 
+
+Time for merging to pref_filter1: 0h 0m 0s 0ms
+Time for processing: 0h 0m 0s 257ms
+filterdb gene_families_tmp/7164836658967419980/linclust/4579891242995182100/pref_filter1 gene_families_tmp/7164836658967419980/linclust/4579891242995182100/pref_filter2 --filter-file gene_families_tmp/7164836658967419980/linclust/4579891242995182100/order_redundancy --threads 16 --compressed 0 -v 3 
+
+Filtering using file(s)
+[=================================================================] 689.50K 0s 161ms
+Time for merging to pref_filter2: 0h 0m 0s 144ms
+Time for processing: 0h 0m 0s 508ms
+rescorediagonal gene_families_tmp/7164836658967419980/linclust/4579891242995182100/input_step_redundancy gene_families_tmp/7164836658967419980/linclust/4579891242995182100/input_step_redundancy gene_families_tmp/7164836658967419980/linclust/4579891242995182100/pref_filter2 gene_families_tmp/7164836658967419980/linclust/4579891242995182100/pref_rescore2 --sub-mat 'aa:blosum62.out,nucl:nucleotide.out' --rescore-mode 1 --wrapped-scoring 0 --filter-hits 1 -e 0.001 -c 0.8 -a 0 --cov-mode 0 --min-seq-id 0.8 --min-aln-len 0 --seq-id-mode 0 --add-self-matches 0 --sort-results 0 --db-load-mode 0 --threads 16 --compressed 0 -v 3 
+
+[=================================================================] 689.50K 0s 313ms
+Time for merging to pref_rescore2: 0h 0m 0s 147ms
+Time for processing: 0h 0m 0s 726ms
+align gene_families_tmp/7164836658967419980/linclust/4579891242995182100/input_step_redundancy gene_families_tmp/7164836658967419980/linclust/4579891242995182100/input_step_redundancy gene_families_tmp/7164836658967419980/linclust/4579891242995182100/pref_rescore2 gene_families_tmp/7164836658967419980/linclust/4579891242995182100/aln --sub-mat 'aa:blosum62.out,nucl:nucleotide.out' -a 0 --alignment-mode 3 --alignment-output-mode 0 --wrapped-scoring 0 -e 0.001 --min-seq-id 0.8 --min-aln-len 0 --seq-id-mode 0 --alt-ali 0 -c 0.8 --cov-mode 0 --max-seq-len 65535 --comp-bias-corr 0 --comp-bias-corr-scale 1 --max-rejected 2147483647 --max-accept 2147483647 --add-self-matches 0 --db-load-mode 0 --pca substitution:1.100,context:1.400 --pcb substitution:4.100,context:5.800 --score-bias 0 --realign 0 --realign-score-bias -0.2 --realign-max-seqs 2147483647 --corr-score-weight 0 --gap-open aa:11,nucl:5 --gap-extend aa:1,nucl:2 --zdrop 40 --threads 16 --compressed 0 -v 3 
+
+Compute score, coverage and sequence identity
+Query database size: 689502 type: Aminoacid
+Target database size: 689502 type: Aminoacid
+Calculation of alignments
+[=================================================================] 689.50K 15s 862ms
+Time for merging to aln: 0h 0m 0s 144ms
+1541999 alignments calculated
+762401 sequence pairs passed the thresholds (0.494424 of overall calculated)
+1.105727 hits per query sequence
+Time for processing: 0h 0m 16s 273ms
+clust gene_families_tmp/7164836658967419980/linclust/4579891242995182100/input_step_redundancy gene_families_tmp/7164836658967419980/linclust/4579891242995182100/aln gene_families_tmp/7164836658967419980/linclust/4579891242995182100/clust --cluster-mode 0 --max-iterations 1000 --similarity-type 2 --threads 16 --compressed 0 -v 3 --cluster-weight-threshold 0.9 
+
+Clustering mode: Set Cover
+[=================================================================] 689.50K 0s 37ms
+Sort entries
+Find missing connections
+Found 72899 new connections.
+Reconstruct initial order
+[=================================================================] 689.50K 0s 37ms
+Add missing connections
+[=================================================================] 689.50K 0s 19ms
+
+Time for read in: 0h 0m 0s 134ms
+Total time: 0h 0m 0s 224ms
+
+Size of the sequence database: 689502
+Size of the alignment database: 689502
+Number of clusters: 634472
+
+Writing results 0h 0m 0s 56ms
+Time for merging to clust: 0h 0m 0s 0ms
+Time for processing: 0h 0m 0s 393ms
+mergeclusters gene_families_DB gene_families_tmp/7164836658967419980/clu_redundancy gene_families_tmp/7164836658967419980/linclust/4579891242995182100/pre_clust gene_families_tmp/7164836658967419980/linclust/4579891242995182100/clust --threads 16 --compressed 0 -v 3 
+
+Clustering step 1
+[=================================================================] 689.50K 0s 56ms
+Clustering step 2
+[=================================================================] 634.47K 0s 158ms
+Write merged clustering
+[=================================================================] 1.74M 0s 299ms
+Time for merging to clu_redundancy: 0h 0m 0s 131ms
+Time for processing: 0h 0m 0s 576ms
+createsubdb gene_families_tmp/7164836658967419980/clu_redundancy gene_families_DB gene_families_tmp/7164836658967419980/input_step_redundancy -v 3 --subdb-mode 1 
+
+Time for merging to input_step_redundancy: 0h 0m 0s 0ms
+Time for processing: 0h 0m 0s 169ms
+prefilter gene_families_tmp/7164836658967419980/input_step_redundancy gene_families_tmp/7164836658967419980/input_step_redundancy gene_families_tmp/7164836658967419980/pref_step0 --sub-mat 'aa:blosum62.out,nucl:nucleotide.out' --seed-sub-mat 'aa:VTML80.out,nucl:nucleotide.out' -s 1 -k 0 --target-search-mode 0 --k-score seq:2147483647,prof:2147483647 --alph-size aa:21,nucl:5 --max-seq-len 65535 --max-seqs 20 --split 0 --split-mode 2 --split-memory-limit 0 -c 0.8 --cov-mode 0 --comp-bias-corr 0 --comp-bias-corr-scale 1 --diag-score 0 --exact-kmer-matching 0 --mask 1 --mask-prob 0.9 --mask-lower-case 0 --min-ungapped-score 0 --add-self-matches 0 --spaced-kmer-mode 1 --db-load-mode 0 --pca substitution:1.100,context:1.400 --pcb substitution:4.100,context:5.800 --threads 16 --compressed 0 -v 3 
+
+Query database size: 634472 type: Aminoacid
+Estimated memory consumption: 2G
+Target database size: 634472 type: Aminoacid
+Index table k-mer threshold: 154 at k-mer size 6 
+Index table: counting k-mers
+[=================================================================] 634.47K 1s 607ms
+Index table: Masked residues: 5285696
+Index table: fill
+[=================================================================] 634.47K 1s 167ms
+Index statistics
+Entries:          79855052
+DB size:          945 MB
+Avg k-mer size:   1.247735
+Top 10 k-mers
+    IHDKNI	1947
+    GPGGTL	1853
+    DLLDMP	1750
+    LAMHRT	1610
+    NNVFGN	1050
+    LGGFTY	1039
+    GLGNGK	786
+    GQQIAR	785
+    GGGGIV	766
+    GVHIPV	757
+Time for index table init: 0h 0m 3s 132ms
+Process prefiltering step 1 of 1
+
+k-mer similarity threshold: 154
+Starting prefiltering scores calculation (step 1 of 1)
+Query db start 1 to 634472
+Target db start 1 to 634472
+[=================================================================] 634.47K 3s 198ms
+
+1.842294 k-mers per position
+2078 DB matches per sequence
+0 overflows
+15 sequences passed prefiltering per query sequence
+20 median result list length
+0 sequences with 0 size result lists
+Time for merging to pref_step0: 0h 0m 0s 144ms
+Time for processing: 0h 0m 6s 820ms
+align gene_families_tmp/7164836658967419980/input_step_redundancy gene_families_tmp/7164836658967419980/input_step_redundancy gene_families_tmp/7164836658967419980/pref_step0 gene_families_tmp/7164836658967419980/aln_step0 --sub-mat 'aa:blosum62.out,nucl:nucleotide.out' -a 0 --alignment-mode 3 --alignment-output-mode 0 --wrapped-scoring 0 -e 0.001 --min-seq-id 0.8 --min-aln-len 0 --seq-id-mode 0 --alt-ali 0 -c 0.8 --cov-mode 0 --max-seq-len 65535 --comp-bias-corr 0 --comp-bias-corr-scale 1 --max-rejected 2147483647 --max-accept 2147483647 --add-self-matches 0 --db-load-mode 0 --pca substitution:1.100,context:1.400 --pcb substitution:4.100,context:5.800 --score-bias 0 --realign 0 --realign-score-bias -0.2 --realign-max-seqs 2147483647 --corr-score-weight 0 --gap-open aa:11,nucl:5 --gap-extend aa:1,nucl:2 --zdrop 40 --threads 16 --compressed 0 -v 3 
+
+Compute score, coverage and sequence identity
+Query database size: 634472 type: Aminoacid
+Target database size: 634472 type: Aminoacid
+Calculation of alignments
+[=================================================================] 634.47K 2m 28s 677ms
+Time for merging to aln_step0: 0h 0m 0s 133ms
+7422829 alignments calculated
+781551 sequence pairs passed the thresholds (0.105290 of overall calculated)
+1.231813 hits per query sequence
+Time for processing: 0h 2m 29s 49ms
+clust gene_families_tmp/7164836658967419980/input_step_redundancy gene_families_tmp/7164836658967419980/aln_step0 gene_families_tmp/7164836658967419980/clu_step0 --cluster-mode 0 --max-iterations 1000 --similarity-type 2 --threads 16 --compressed 0 -v 3 --cluster-weight-threshold 0.9 
+
+Clustering mode: Set Cover
+[=================================================================] 634.47K 0s 35ms
+Sort entries
+Find missing connections
+Found 3745 new connections.
+Reconstruct initial order
+[=================================================================] 634.47K 0s 35ms
+Add missing connections
+[=================================================================] 634.47K 0s 16ms
+
+Time for read in: 0h 0m 0s 124ms
+Total time: 0h 0m 0s 212ms
+
+Size of the sequence database: 634472
+Size of the alignment database: 634472
+Number of clusters: 595192
+
+Writing results 0h 0m 0s 53ms
+Time for merging to clu_step0: 0h 0m 0s 0ms
+Time for processing: 0h 0m 0s 351ms
+mergeclusters gene_families_DB gene_families_cluster gene_families_tmp/7164836658967419980/clu_redundancy gene_families_tmp/7164836658967419980/clu_step0 --threads 16 --compressed 0 -v 3 
+
+Clustering step 1
+[=================================================================] 634.47K 0s 66ms
+Clustering step 2
+[=================================================================] 595.19K 0s 147ms
+Write merged clustering
+[=================================================================] 1.74M 0s 251ms
+Time for merging to gene_families_cluster: 0h 0m 0s 126ms
+Time for processing: 0h 0m 0s 537ms
+createtsv gene_families_DB gene_families_DB gene_families_cluster gene_families_clusters.tsv --threads 16 
+
+MMseqs Version:                 	cfbea63affb7071bb4f3967bc60d15e1191b85da
+First sequence as representative	false
+Target column                   	1
+Add full header                 	false
+Sequence source                 	0
+Database output                 	false
+Threads                         	16
+Compressed                      	0
+Verbosity                       	3
+
+Time for merging to gene_families_clusters.tsv: 0h 0m 0s 194ms
+Time for processing: 0h 0m 0s 423ms
+================================================================================
+STEP 3: GENE FAMILY CLUSTERING
+================================================================================
+
+Found 449 protein sequence files
+
+Loading genome metadata...
+  Genomes in metadata: 771
+  Genomes with proteins: 771
+
+Using minimum 40 genomes per gene family
+Concatenating protein sequences...
+  Total proteins: 1,743,575
+  From 449 genomes
+
+Running MMseqs2 clustering (identity=0.8, coverage=0.8)...
+  Creating database...
+  Clustering (this may take 30-60 minutes)...
+  Creating TSV output...
+  Clustering complete. Results in: gene_families_clusters.tsv
+
+Parsing clusters...
+  Total gene families: 595192
+
+Creating presence/absence matrix (min 40 genomes per family)...
+  Gene families after filtering: 2551
+  Matrix shape: (449, 2551)
+  Sparsity: 81.6%
+
+Saved gene family matrix to: gene_family_matrix.csv
+Saved gene family info to: gene_family_info.csv
+Saved filtered genome metadata to: complete_genomes_with_proteins.csv
+
+================================================================================
+GENE FAMILY SUMMARY
+================================================================================
+Genomes analyzed: 771
+Total gene families (>=40 genomes): 2551
+Average family size: 82.5
+Median family size: 67
+Max family size: 449
+
+================================================================================
+STEP 3 COMPLETE
+================================================================================

@@ -1,0 +1,106 @@
+======================================================================
+DIAZOTROPH CLASSIFICATION PIPELINE
+======================================================================
+Job ID: 7145958
+Node: bigmem004
+Start time: Sun Nov  9 12:57:01 PM CST 2025
+======================================================================
+
+Installing/updating Python packages...
+Requirement already satisfied: pip in ./venv/lib/python3.12/site-packages (25.3)
+Requirement already satisfied: pandas in ./venv/lib/python3.12/site-packages (2.3.3)
+Requirement already satisfied: numpy in ./venv/lib/python3.12/site-packages (2.3.4)
+Requirement already satisfied: scipy in ./venv/lib/python3.12/site-packages (1.16.3)
+Requirement already satisfied: scikit-learn in ./venv/lib/python3.12/site-packages (1.7.2)
+Requirement already satisfied: matplotlib in ./venv/lib/python3.12/site-packages (3.10.7)
+Requirement already satisfied: seaborn in ./venv/lib/python3.12/site-packages (0.13.2)
+Requirement already satisfied: xgboost in ./venv/lib/python3.12/site-packages (3.1.1)
+Requirement already satisfied: python-dateutil>=2.8.2 in ./venv/lib/python3.12/site-packages (from pandas) (2.9.0.post0)
+Requirement already satisfied: pytz>=2020.1 in ./venv/lib/python3.12/site-packages (from pandas) (2025.2)
+Requirement already satisfied: tzdata>=2022.7 in ./venv/lib/python3.12/site-packages (from pandas) (2025.2)
+Requirement already satisfied: joblib>=1.2.0 in ./venv/lib/python3.12/site-packages (from scikit-learn) (1.5.2)
+Requirement already satisfied: threadpoolctl>=3.1.0 in ./venv/lib/python3.12/site-packages (from scikit-learn) (3.6.0)
+Requirement already satisfied: contourpy>=1.0.1 in ./venv/lib/python3.12/site-packages (from matplotlib) (1.3.3)
+Requirement already satisfied: cycler>=0.10 in ./venv/lib/python3.12/site-packages (from matplotlib) (0.12.1)
+Requirement already satisfied: fonttools>=4.22.0 in ./venv/lib/python3.12/site-packages (from matplotlib) (4.60.1)
+Requirement already satisfied: kiwisolver>=1.3.1 in ./venv/lib/python3.12/site-packages (from matplotlib) (1.4.9)
+Requirement already satisfied: packaging>=20.0 in ./venv/lib/python3.12/site-packages (from matplotlib) (25.0)
+Requirement already satisfied: pillow>=8 in ./venv/lib/python3.12/site-packages (from matplotlib) (12.0.0)
+Requirement already satisfied: pyparsing>=3 in ./venv/lib/python3.12/site-packages (from matplotlib) (3.2.5)
+Requirement already satisfied: nvidia-nccl-cu12 in ./venv/lib/python3.12/site-packages (from xgboost) (2.28.7)
+Requirement already satisfied: six>=1.5 in ./venv/lib/python3.12/site-packages (from python-dateutil>=2.8.2->pandas) (1.17.0)
+
+======================================================================
+STEP 1: Data Preparation
+======================================================================
+================================================================================
+STEP 1: DATA PREPARATION AND LABELING
+================================================================================
+
+Loading data from: nif_hdk_hits_enriched_with_quality_checkm.csv
+Total genomes loaded: 6825
+
+Parsing organism names...
+Converting e-values...
+
+Filtering for Complete Genome ONLY...
+Complete genomes: 771
+
+Labeling diazotrophs (all nifH, D, K < 1e-50)...
+  Diazotrophs: 295
+  Non-diazotrophs: 476
+  Unique genera: 81
+
+Saved labeled dataset to: complete_genomes_labeled.csv
+Saved accession list to: genome_accessions.txt
+
+================================================================================
+SUMMARY STATISTICS
+================================================================================
+
+Total complete genomes: 771
+Diazotrophs: 295 (38.3%)
+Non-diazotrophs: 476 (61.7%)
+
+Top 10 genera:
+genus
+Prochlorococcus        164
+Synechococcus          104
+Nostoc                  63
+Thermosynechococcus     42
+Leptolyngbya            25
+Microcystis             24
+Synechocystis           20
+Dolichospermum          20
+Calothrix               16
+Anabaena                16
+Name: count, dtype: int64
+
+Diazotroph distribution by top genera (n >= 5):
+                     diazotroph_count  total_count  percent_diazotroph
+genus                                                                 
+Prochlorococcus                     0          164                 0.0
+Synechococcus                       4          104                 3.8
+Nostoc                             63           63               100.0
+Thermosynechococcus                 0           42                 0.0
+Leptolyngbya                       22           25                88.0
+Microcystis                         0           24                 0.0
+Dolichospermum                     20           20               100.0
+Synechocystis                       2           20                10.0
+Anabaena                           14           16                87.5
+Calothrix                          16           16               100.0
+Cylindrospermopsis                 14           14               100.0
+Cyanobacterium                      5           13                38.5
+Planktothrix                        2           13                15.4
+Microcoleus                         0           10                 0.0
+cyanobacterium                     10           10               100.0
+
+================================================================================
+STEP 1 COMPLETE
+================================================================================
+
+======================================================================
+STEP 2: Download Protein Sequences
+======================================================================
+Note: This step may take several hours...
+Error in Step 2

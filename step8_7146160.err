@@ -1,0 +1,2 @@
+/mmfs1/scratch/jacks.local/jyoung67391/diazotroph_classification/08_build_narrative_table.py:151: DeprecationWarning: DataFrameGroupBy.apply operated on the grouping columns. This behavior is deprecated, and in a future version of pandas the grouping columns will be excluded from the operation. Either pass `include_groups=False` to exclude the groupings or explicitly select the grouping columns after groupby to silence this warning.
+  .apply(org_list)

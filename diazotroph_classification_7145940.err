@@ -1,0 +1,11 @@
+Traceback (most recent call last):
+  File "/mmfs1/scratch/jacks.local/jyoung67391/diazotroph_classification/03_create_gene_families.py", line 242, in <module>
+    main()
+  File "/mmfs1/scratch/jacks.local/jyoung67391/diazotroph_classification/03_create_gene_families.py", line 195, in main
+    cluster_tsv = run_mmseqs2_clustering(
+                  ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mmfs1/scratch/jacks.local/jyoung67391/diazotroph_classification/03_create_gene_families.py", line 54, in run_mmseqs2_clustering
+    subprocess.run(cmd, check=True, capture_output=True)
+  File "/mmfs1/cm/shared/apps_local/python/3.12/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['mmseqs', 'createdb', 'all_proteins.faa', 'gene_families_DB']' returned non-zero exit status 1.
