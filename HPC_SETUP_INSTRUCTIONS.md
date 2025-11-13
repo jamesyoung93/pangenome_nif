@@ -379,7 +379,8 @@ python3 pangenome_pipeline_consolidated.py \
     --input "$INPUT_FILE" \
     --threads $SLURM_CPUS_PER_TASK \
     --start-step 1 \
-    --end-step 5
+    --end-step 5 \
+    --non-interactive
 ```
 
 ### Skip Protein Download
@@ -390,7 +391,8 @@ If proteins are already downloaded:
 python3 pangenome_pipeline_consolidated.py \
     --input "$INPUT_FILE" \
     --threads $SLURM_CPUS_PER_TASK \
-    --skip-download
+    --skip-download \
+    --non-interactive
 ```
 
 ### Adjust Parameters
@@ -399,8 +401,25 @@ python3 pangenome_pipeline_consolidated.py \
 python3 pangenome_pipeline_consolidated.py \
     --input "$INPUT_FILE" \
     --threads $SLURM_CPUS_PER_TASK \
-    --min-genomes 20        # Lower threshold for small datasets
+    --min-genomes 20 \      # Lower threshold for small datasets
+    --non-interactive
 ```
+
+### Non-Interactive Mode (Recommended for SLURM)
+
+When running in SLURM batch jobs, use the `--non-interactive` flag to prevent the pipeline from prompting for user input. This flag is already included in the provided SLURM script, but can be added manually if needed:
+
+```bash
+python3 pangenome_pipeline_consolidated.py \
+    --input "$INPUT_FILE" \
+    --threads $SLURM_CPUS_PER_TASK \
+    --non-interactive        # No user prompts, auto-continue on warnings
+```
+
+This flag:
+- Prevents `EOFError` failures when running in batch mode
+- Automatically continues even when protein files are limited
+- Is recommended for all SLURM/batch job submissions
 
 ---
 
