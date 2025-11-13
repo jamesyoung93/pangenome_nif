@@ -207,10 +207,18 @@ def step2_download_proteins():
 
     # For HPC environments, we'll use the existing 02_download_proteins.py
     # as it has robust retry logic and error handling
-    if os.path.exists('02_download_proteins.py'):
+    # Use absolute path to be more robust
+    script_dir = Path(__file__).parent if '__file__' in globals() else Path.cwd()
+    download_script = script_dir / '02_download_proteins.py'
+
+    print(f"\nLooking for download script at: {download_script}")
+    print(f"Current working directory: {os.getcwd()}")
+    print(f"Script exists: {download_script.exists()}")
+
+    if download_script.exists():
         print("\nUsing existing download script with robust error handling...")
         cmd = [
-            'python3', '02_download_proteins.py',
+            'python3', str(download_script),
             '--csv', 'complete_genomes_labeled.csv',
             '--complete-only',
             '--outdir', 'downloads',
@@ -219,12 +227,13 @@ def step2_download_proteins():
             '--retries', str(config.download_retries),
             '--email', config.email
         ]
+        print(f"Running command: {' '.join(cmd)}")
         result = subprocess.run(cmd)
         if result.returncode != 0:
-            print("\nWARNING: Download encountered errors. Check download_log.tsv")
+            print("\nWARNING: Download encountered errors. Check downloads/download_log.tsv")
             print("Pipeline will continue with available proteins.")
     else:
-        print("\nWARNING: 02_download_proteins.py not found.")
+        print(f"\nWARNING: 02_download_proteins.py not found at {download_script}")
         print("Please ensure protein sequences are available in:", protein_dir)
 
     # Check results
