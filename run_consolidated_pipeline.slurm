@@ -109,7 +109,8 @@ echo ""
 python3 "$MAIN_SCRIPT" \
     --input "$INPUT_FILE" \
     --threads $SLURM_CPUS_PER_TASK \
-    --min-genomes 40
+    --min-genomes 40 \
+    --non-interactive
 
 PIPELINE_EXIT_CODE=$?
 

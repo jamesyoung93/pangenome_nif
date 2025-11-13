@@ -98,6 +98,9 @@ class PipelineConfig:
         self.download_sleep = 0.25
         self.download_retries = 3
 
+        # Runtime parameters
+        self.non_interactive = False
+
 config = PipelineConfig()
 
 # ============================================================================
@@ -231,9 +234,14 @@ def step2_download_proteins():
     if len(existing_after) < 50:
         print("\nWARNING: Very few protein files available.")
         print("Analysis may not be robust with limited data.")
-        response = input("Continue anyway? (yes/no): ")
-        if response.lower() != 'yes':
-            return False
+
+        # Check if we're in interactive mode or if non-interactive flag is set
+        if config.non_interactive or not sys.stdin.isatty():
+            print("Running in non-interactive mode - continuing automatically.")
+        else:
+            response = input("Continue anyway? (yes/no): ")
+            if response.lower() != 'yes':
+                return False
 
     print("\n" + "="*80)
     print("STEP 2 COMPLETE")
@@ -1100,6 +1108,8 @@ def main():
                         help='End at this step (1-8)')
     parser.add_argument('--skip-download', action='store_true',
                         help='Skip protein download (assume already done)')
+    parser.add_argument('--non-interactive', action='store_true',
+                        help='Run in non-interactive mode (no user prompts, suitable for batch/SLURM jobs)')
 
     args = parser.parse_args()
 
@@ -1107,6 +1117,7 @@ def main():
     config.input_csv = args.input
     config.threads = args.threads
     config.min_genomes_per_family = args.min_genomes
+    config.non_interactive = args.non_interactive
 
     print("\n" + "="*80)
     print("CONSOLIDATED PANGENOME ANALYSIS PIPELINE")

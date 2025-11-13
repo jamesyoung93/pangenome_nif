@@ -1,0 +1,58 @@
+# Python cache and compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual environments
+venv/
+env/
+ENV/
+
+# Data and analysis outputs
+downloads/
+results_*/
+*.faa
+*.tsv
+*.tar.gz
+
+# MMseqs2 intermediate files
+*_DB
+*_DB.*
+*_cluster
+*_cluster.*
+*_tmp/
+all_proteins.faa
+
+# Analysis outputs
+gene_family_matrix.csv
+gene_family_info.csv
+gene_family_purity_stats.csv
+complete_genomes_labeled.csv
+complete_genomes_with_proteins.csv
+genome_accessions.txt
+classification_summary.csv
+feature_importance_*.csv
+feature_directionality_*.csv
+fold_metrics_*.csv
+narrative_top_features.csv
+llm_context_features.csv
+gf_*.csv
+download_log.tsv
+
+# Plots
+*.png
+*.pdf
+
+# SLURM outputs
+*.out
+*.err
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
