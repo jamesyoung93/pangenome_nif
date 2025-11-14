@@ -207,15 +207,32 @@ def step2_download_proteins():
 
     # For HPC environments, we'll use the existing 02_download_proteins.py
     # as it has robust retry logic and error handling
-    # Use absolute path to be more robust
-    script_dir = Path(__file__).parent if '__file__' in globals() else Path.cwd()
-    download_script = script_dir / '02_download_proteins.py'
+    # Try multiple locations to find the download script
+    download_script = None
+    search_paths = []
 
-    print(f"\nLooking for download script at: {download_script}")
+    # First try: same directory as this script
+    if '__file__' in globals():
+        script_dir = Path(__file__).parent.resolve()
+        search_paths.append(script_dir / '02_download_proteins.py')
+
+    # Second try: current working directory
+    search_paths.append(Path.cwd() / '02_download_proteins.py')
+
+    # Third try: relative to current directory
+    search_paths.append(Path('02_download_proteins.py'))
+
+    print(f"\nSearching for download script...")
     print(f"Current working directory: {os.getcwd()}")
-    print(f"Script exists: {download_script.exists()}")
 
-    if download_script.exists():
+    for path in search_paths:
+        print(f"  Checking: {path.resolve()}")
+        if path.exists():
+            download_script = path
+            print(f"  ✓ Found!")
+            break
+
+    if download_script:
         print("\nUsing existing download script with robust error handling...")
         cmd = [
             'python3', str(download_script),
@@ -233,8 +250,13 @@ def step2_download_proteins():
             print("\nWARNING: Download encountered errors. Check downloads/download_log.tsv")
             print("Pipeline will continue with available proteins.")
     else:
-        print(f"\nWARNING: 02_download_proteins.py not found at {download_script}")
-        print("Please ensure protein sequences are available in:", protein_dir)
+        print(f"\nWARNING: 02_download_proteins.py not found in any of the following locations:")
+        for path in search_paths:
+            print(f"  - {path.resolve()}")
+        print("\nPlease ensure:")
+        print("  1. The download script is in the same directory as this script, OR")
+        print("  2. Run this script from the repository directory, OR")
+        print("  3. Protein sequences are already available in:", protein_dir)
 
     # Check results
     existing_after = list(protein_dir.glob('*.faa'))
