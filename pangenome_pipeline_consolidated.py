@@ -236,8 +236,7 @@ def step2_download_proteins():
         print("\nUsing existing download script with robust error handling...")
         cmd = [
             'python3', str(download_script),
-            '--csv', 'complete_genomes_labeled.csv',
-            '--complete-only',
+            '--nif-csv', config.input_csv,
             '--outdir', 'downloads',
             '--jobs', str(config.download_jobs),
             '--sleep', str(config.download_sleep),

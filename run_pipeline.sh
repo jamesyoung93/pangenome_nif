@@ -59,7 +59,7 @@ echo "======================================================================"
 echo "STEP 2: Download Protein Sequences"
 echo "======================================================================"
 echo "Note: This step may take several hours..."
-python3 02_download_proteins.py
+python3 02_download_proteins.py --nif-csv nif_hdk_hits_enriched_with_quality_checkm.csv --outdir downloads
 
 if [ $? -ne 0 ]; then
     echo "Error in Step 2"

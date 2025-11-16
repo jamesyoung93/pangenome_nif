@@ -12,20 +12,24 @@ Key changes in this hotfix:
 - **Handles GCF (RefSeq) vs GCA (GenBank)** and falls back to *_translated_cds.faa.gz
   when *_protein.faa.gz is absent.
 - **HPC-friendly**: single outbound HTTPS only, retry logic, rate limiting, logs.
-- **Input flexible**: takes either a one-per-line accession list or a CSV with an
-  `assembly_accession` column. Optionally filters to `Complete Genome` level.
+- **Input flexible**: takes either a one-per-line accession list, a CSV with an
+  `assembly_accession` column, **or the canonical nif_hdk_hits CSV** with
+  reproducible filtering to `Complete Genome` rows (and `download_ok=1`).
 - **Output**: writes FASTA files to `proteins/` as `<accession>.faa` (gunzipped).
 
 Usage examples
 --------------
-# A) Using accessions.txt (one per line)
+# A) Use nif_hdk_hits_enriched_with_quality_checkm.csv directly
+python 02_download_proteins.py --nif-csv nif_hdk_hits_enriched_with_quality_checkm.csv
+
+# B) Using accessions.txt (one per line)
 python 02_download_proteins.py --accessions accessions.txt --outdir downloads --prefer datasets-cli
 
-# B) Using the CSV from step 1 and filtering to Complete Genome
+# C) Using a generic CSV and filtering to Complete Genome
 python 02_download_proteins.py --csv labeled_complete_genomes.csv --complete-only
 
-# C) Limit to 8 concurrent downloads and slow the rate
-python 02_download_proteins.py --accessions accessions.txt -j 8 --sleep 0.5
+# D) Limit to 8 concurrent downloads and slow the rate
+python 02_download_proteins.py --nif-csv nif_hdk_hits_enriched_with_quality_checkm.csv -j 8 --sleep 0.5
 
 Notes
 -----
@@ -89,12 +93,52 @@ def read_accessions_from_csv(path: Path, accession_col: str = "assembly_accessio
             raise SystemExit(f"ERROR: column '{accession_col}' not found in CSV header: {reader.fieldnames}")
         for row in reader:
             acc = (row.get(accession_col) or "").strip()
-            if not acc: 
+            if not acc:
                 continue
             # Optional filter: Complete Genome
             level = (row.get("assembly_level") or "").strip()
             yield (acc, level)
     # not reached
+
+
+def read_complete_genomes_from_nif(path: Path) -> List[str]:
+    """Parse nif_hdk_hits CSV to reproducibly capture target Complete Genomes.
+
+    Selection rules (production-safe):
+    - assembly_level == "Complete Genome"
+    - download_ok is truthy ("1", "true", "yes", or empty/None)
+    """
+
+    required_cols = {"assembly_accession", "assembly_level"}
+    with open(path, newline="") as hdr:
+        header_reader = csv.DictReader(hdr)
+        missing = required_cols - set(header_reader.fieldnames or [])
+    if missing:
+        raise SystemExit(f"ERROR: missing required columns in {path}: {missing}")
+
+    accessions: List[str] = []
+    with open(path, newline="") as fh:
+        reader = csv.DictReader(fh)
+        for row in reader:
+            level = (row.get("assembly_level") or "").strip()
+            if level != "Complete Genome":
+                continue
+
+            download_ok_raw = (row.get("download_ok") or "").strip().lower()
+            if download_ok_raw not in ("", "1", "true", "yes", "y"):
+                continue
+
+            acc = (row.get("assembly_accession") or "").strip()
+            if acc:
+                accessions.append(acc)
+
+    deduped = sorted(dict.fromkeys(accessions))
+    if not deduped:
+        raise SystemExit(
+            f"ERROR: no Complete Genome rows with download_ok in {path}. Check the input file."
+        )
+
+    return deduped
 
 def filter_complete_only(items: Iterable[Tuple[str, str]]) -> List[str]:
     out = []
@@ -260,6 +304,8 @@ def main():
     src = p.add_mutually_exclusive_group(required=True)
     src.add_argument("--accessions", type=Path, help="Text file with one assembly accession per line")
     src.add_argument("--csv", type=Path, help="CSV containing an 'assembly_accession' column (optionally 'assembly_level')")
+    src.add_argument("--nif-csv", dest="nif_csv", type=Path,
+                    help="Use nif_hdk_hits CSV; automatically filters to Complete Genome rows with download_ok=1")
     p.add_argument("--complete-only", action="store_true", help="If using --csv, keep only rows with assembly_level == 'Complete Genome'")
     p.add_argument("--outdir", type=Path, default=Path("downloads"), help="Directory to place downloads and logs")
     p.add_argument("--email", default=DEFAULT_EMAIL, help="Email to include in User-Agent (recommended by NCBI)")
@@ -275,15 +321,30 @@ def main():
     proteins_dir.mkdir(exist_ok=True)
 
     # Build accession list
-    if args.accessions:
+    source_desc = ""
+    if args.nif_csv:
+        accessions = read_complete_genomes_from_nif(args.nif_csv)
+        source_desc = f"{args.nif_csv} (Complete Genome + download_ok=1)"
+    elif args.accessions:
         accessions = read_accessions_from_file(args.accessions)
+        source_desc = str(args.accessions)
     else:
         pairs = list(read_accessions_from_csv(args.csv))
         accessions = filter_complete_only(pairs) if args.complete_only else [a for a,_ in pairs]
+        source_desc = f"{args.csv} ({'Complete Genome only' if args.complete_only else 'all rows'})"
+
+    accessions = sorted(dict.fromkeys(accessions))
 
     if not accessions:
         print("No accessions found. Exiting.")
         sys.exit(0)
+
+    manifest = args.outdir / "target_complete_genomes.txt"
+    with open(manifest, "w") as mf:
+        for acc in accessions:
+            mf.write(f"{acc}\n")
+    print(f"Target genomes: {len(accessions)} (source: {source_desc})")
+    print(f"Manifest: {manifest}")
 
     # Tool detection
     have_datasets = have("datasets")
