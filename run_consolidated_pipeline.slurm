@@ -25,12 +25,11 @@ echo "Memory: 256GB"
 echo "Start time: $(date)"
 echo "======================================================================"
 
-# Load required modules
+# Load required modules (Python environment must already be active)
 echo ""
 echo "Loading modules..."
 module purge
 module load StdEnv
-module load python/3.12
 module load mmseqs2/15-6f452
 
 # Show loaded modules
@@ -38,36 +37,29 @@ echo ""
 echo "Loaded modules:"
 module list
 
-# Create and activate Python virtual environment
 echo ""
-echo "Setting up Python environment..."
-if [ ! -d "venv" ]; then
-    echo "Creating Python virtual environment..."
-    python3 -m venv venv
-fi
-
-# Activate virtual environment
-source venv/bin/activate
-
-# Verify Python version
-echo ""
-echo "Python version:"
+echo "Using pre-activated Python environment (venv or conda)"
 python3 --version
 
-# Install/upgrade required Python packages
-echo ""
-echo "Installing Python packages..."
-pip install --upgrade pip --quiet
-pip install --quiet \
-    pandas \
-    numpy \
-    scipy \
-    scikit-learn \
-    matplotlib \
-    seaborn \
-    xgboost
-
-echo "Python packages installed successfully"
+echo "Checking required Python packages..."
+python3 - <<'PY'
+import importlib.util, sys
+required = [
+    "pandas",
+    "numpy",
+    "scipy",
+    "sklearn",
+    "matplotlib",
+    "seaborn",
+    "xgboost",
+]
+missing = [pkg for pkg in required if importlib.util.find_spec(pkg) is None]
+if missing:
+    print("ERROR: Missing Python packages: " + ", ".join(missing))
+    print("Install them in your environment before submitting this job.")
+    sys.exit(1)
+print("All required Python packages found.")
+PY
 
 # Check for required input file
 echo ""

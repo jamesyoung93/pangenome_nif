@@ -22,26 +22,34 @@ echo "Node: $SLURM_NODELIST"
 echo "Start time: $(date)"
 echo "======================================================================"
 
-# Load required modules
+# Load required modules (Python environment must already be active)
 module purge
 module load StdEnv
-module load python/3.12
 module load mmseqs2/15-6f452
 
-# Create Python virtual environment if it doesn't exist
-if [ ! -d "venv" ]; then
-    echo "Creating Python virtual environment..."
-    python3 -m venv venv
-fi
-
-# Activate virtual environment
-source venv/bin/activate
-
-# Install required Python packages
 echo ""
-echo "Installing/updating Python packages..."
-pip install --upgrade pip
-pip install pandas numpy scipy scikit-learn matplotlib seaborn xgboost
+echo "Using pre-activated Python environment (venv or conda)"
+python3 --version
+
+echo "Checking required Python packages..."
+python3 - <<'PY'
+import importlib.util, sys
+required = [
+    "pandas",
+    "numpy",
+    "scipy",
+    "sklearn",
+    "matplotlib",
+    "seaborn",
+    "xgboost",
+]
+missing = [pkg for pkg in required if importlib.util.find_spec(pkg) is None]
+if missing:
+    print("ERROR: Missing Python packages: " + ", ".join(missing))
+    print("Install them in your environment before submitting this job.")
+    sys.exit(1)
+print("All required Python packages found.")
+PY
 
 echo ""
 echo "======================================================================"
