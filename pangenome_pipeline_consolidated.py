@@ -258,6 +258,14 @@ def step2_download_proteins():
         print("  2. Run this script from the repository directory, OR")
         print("  3. Protein sequences are already available in:", protein_dir)
 
+        # If we have zero proteins and no way to download them, abort early with
+        # a clear error message instead of failing later during clustering.
+        if len(existing) == 0:
+            print("\nERROR: No protein FASTA files are available and the download script is missing.")
+            print("       Please place 02_download_proteins.py alongside this pipeline or")
+            print("       populate downloads/proteins/ with .faa files before re-running.")
+            return False
+
     # Check results
     existing_after = list(protein_dir.glob('*.faa'))
     print(f"\nProtein files available: {len(existing_after)}")
