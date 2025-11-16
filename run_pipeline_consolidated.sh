@@ -37,7 +37,6 @@ echo "Loading modules..."
 echo "======================================================================"
 module purge
 module load StdEnv
-module load python/3.12
 module load mmseqs2/15-6f452
 
 # Optional NCBI datasets module (used by the consolidated script if available)
@@ -60,17 +59,29 @@ fi
 
 module list
 
-# Set up Python environment
-if [ ! -d "venv" ]; then
-    echo "Creating Python virtual environment..."
-    python3 -m venv venv
-fi
-source venv/bin/activate
+echo "Using pre-activated Python environment (venv or conda)"
+python3 --version
 
-echo "Python version: $(python3 --version)"
-echo "Installing/updating Python packages..."
-pip install --upgrade pip --quiet
-pip install --quiet pandas numpy scipy scikit-learn matplotlib seaborn xgboost biopython
+echo "Checking required Python packages..."
+python3 - <<'PY'
+import importlib.util, sys
+required = [
+    "pandas",
+    "numpy",
+    "scipy",
+    "sklearn",
+    "matplotlib",
+    "seaborn",
+    "xgboost",
+    "biopython",
+]
+missing = [pkg for pkg in required if importlib.util.find_spec(pkg) is None]
+if missing:
+    print("ERROR: Missing Python packages: " + ", ".join(missing))
+    print("Install them in your environment before submitting this job.")
+    sys.exit(1)
+print("All required Python packages found.")
+PY
 
 echo "======================================================================"
 echo "Validating inputs..."

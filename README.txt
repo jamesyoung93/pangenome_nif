@@ -18,18 +18,35 @@ restrictions. See "Troubleshooting Downloads" section below for solutions.
 
 ## Requirements
 
-### HPC Modules
-- python/3.12
-- mmseqs2/15-6f452
+### Python Environment (user-managed)
+- Create and activate your own **virtual environment or conda environment** before running any scripts. The SLURM/SH scripts no longer create or install packages for you.
+- Install these packages into that environment:
+  - pandas
+  - numpy
+  - scipy
+  - scikit-learn
+  - matplotlib
+  - seaborn
+  - xgboost
 
-### Python Packages (auto-installed)
-- pandas
-- numpy
-- scipy
-- scikit-learn
-- matplotlib
-- seaborn
-- xgboost
+Example (virtualenv):
+```bash
+module load python/3.12   # or any Python 3.9+ you prefer
+python3 -m venv ~/pangenome_venv
+source ~/pangenome_venv/bin/activate
+pip install -U pip pandas numpy scipy scikit-learn matplotlib seaborn xgboost
+```
+
+Example (conda):
+```bash
+conda create -n pangenome python=3.11 -y
+conda activate pangenome
+conda install -y pandas numpy scipy scikit-learn matplotlib seaborn xgboost
+```
+
+### HPC Modules
+- StdEnv
+- mmseqs2/15-6f452
 
 ## Input File
 
@@ -53,13 +70,23 @@ scp -r diazotroph_classification/ your_username@hpc_address:~/
 scp nif_hdk_hits_enriched_with_quality_checkm.csv your_username@hpc_address:~/diazotroph_classification/
 ```
 
-2. Submit the job:
+2. Create and activate your Python environment (venv or conda) on the HPC login node. Example with virtualenv:
+```bash
+module load python/3.12   # or your preferred Python 3.9+
+python3 -m venv ~/pangenome_venv
+source ~/pangenome_venv/bin/activate
+pip install -U pip pandas numpy scipy scikit-learn matplotlib seaborn xgboost
+```
+
+If you already have a conda environment, just activate it instead of creating a new one.
+
+3. Submit the job:
 ```bash
 cd ~/diazotroph_classification
 sbatch run_pipeline.sh
 ```
 
-3. Monitor progress:
+4. Monitor progress:
 ```bash
 # Check job status
 squeue -u your_username
@@ -68,7 +95,7 @@ squeue -u your_username
 tail -f diazotroph_classification_*.out
 ```
 
-4. Retrieve results when complete:
+5. Retrieve results when complete:
 ```bash
 # Download results archive
 scp your_username@hpc_address:~/diazotroph_classification/results.tar.gz .

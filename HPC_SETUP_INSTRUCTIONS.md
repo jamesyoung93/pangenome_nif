@@ -77,11 +77,30 @@ If your site uses a different module name, run `module keyword ncbi` and load
 the closest match. The pipeline will fall back to direct HTTPS downloads if no
 NCBI module is available.
 
+### Step 4: Create and activate your Python environment (required)
+
+The submission scripts no longer create a virtual environment or install packages. Activate your own venv/conda environment **before** running the SLURM scripts so the required packages are available.
+
+Example using `venv`:
+```bash
+module load python/3.12   # or your preferred Python 3.9+
+python3 -m venv ~/pangenome_venv
+source ~/pangenome_venv/bin/activate
+pip install -U pip pandas numpy scipy scikit-learn matplotlib seaborn xgboost
+```
+
+Example using conda:
+```bash
+conda create -n pangenome python=3.11 -y
+conda activate pangenome
+conda install -y pandas numpy scipy scikit-learn matplotlib seaborn xgboost
+```
+
 ---
 
 ## Uploading Data
 
-### Step 3: Transfer Files to HPC
+### Step 5: Transfer Files to HPC
 
 From your **local machine** (in a new terminal window), upload the required files:
 
@@ -112,7 +131,7 @@ git clone https://github.com/your_repo/pangenome_nif.git .
 
 ## Running the Pipeline
 
-### Step 4: Verify Files
+### Step 6: Verify Files
 
 Back in your SSH session on the HPC, verify all files are present:
 
@@ -126,14 +145,14 @@ You should see:
 - `pangenome_pipeline_consolidated.py`
 - `run_consolidated_pipeline.slurm`
 
-### Step 5: Make Scripts Executable
+### Step 7: Make Scripts Executable
 
 ```bash
 chmod +x pangenome_pipeline_consolidated.py
 chmod +x run_consolidated_pipeline.slurm
 ```
 
-### Step 6: Review SLURM Settings (Optional)
+### Step 8: Review SLURM Settings (Optional)
 
 The SLURM script is configured for the **bigmem** partition with:
 - **CPUs**: 32 cores
@@ -157,7 +176,7 @@ Adjust these lines as needed:
 
 Save with `Ctrl+O`, `Enter`, then exit with `Ctrl+X`.
 
-### Step 7: Submit the Job
+### Step 9: Submit the Job
 
 Submit the pipeline to the SLURM scheduler:
 
@@ -234,7 +253,7 @@ scancel 1234567
 
 ## Retrieving Results
 
-### Step 8: Check Job Completion
+### Step 10: Check Job Completion
 
 Once the job completes (disappears from `squeue`), verify it finished successfully:
 
@@ -249,7 +268,7 @@ PIPELINE COMPLETED SUCCESSFULLY!
 ====================================================================
 ```
 
-### Step 9: Review Results
+### Step 11: Review Results
 
 List all output files:
 
