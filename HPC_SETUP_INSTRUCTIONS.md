@@ -58,6 +58,25 @@ mkdir -p pangenome_nif_analysis
 cd pangenome_nif_analysis
 ```
 
+### Step 3: Load required modules
+
+Load the base environment used by the SLURM scripts. On Innovator the NCBI
+tools module is published as **`ncbi-blast/2.14.1`** (not `ncbi`):
+
+```bash
+module purge
+module load StdEnv
+module load python/3.12
+module load mmseqs2/15-6f452
+# For NCBI utilities
+module keyword ncbi        # shows available NCBI-related modules
+module load ncbi-blast/2.14.1
+```
+
+If your site uses a different module name, run `module keyword ncbi` and load
+the closest match. The pipeline will fall back to direct HTTPS downloads if no
+NCBI module is available.
+
 ---
 
 ## Uploading Data
