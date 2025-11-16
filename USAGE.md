@@ -6,11 +6,22 @@ To run the consolidated pangenome analysis pipeline on the HPC cluster:
 
 ### 1. Submit the SLURM job
 
+You can submit the consolidated pipeline with either of these wrappers:
+
 ```bash
 sbatch run_consolidated_pipeline.sh
 ```
 
-This will:
+or the new script that directly calls the all-in-one Python driver:
+
+```bash
+sbatch run_pipeline_consolidated.sh [path/to/input.csv]
+```
+
+If you omit the optional input path, `run_pipeline_consolidated.sh` defaults to
+`nif_hdk_hits_enriched_with_quality_checkm.csv` in the repository directory.
+
+Both wrappers will:
 - Load all required modules (Python, MMseqs2, NCBI datasets)
 - Set up the Python environment
 - Run all 8 pipeline steps automatically
