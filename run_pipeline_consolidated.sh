@@ -47,11 +47,15 @@ if module avail ncbi-datasets 2>&1 | grep -q ncbi-datasets; then
 elif module avail datasets 2>&1 | grep -q datasets; then
     module load datasets
     echo "Loaded datasets module"
+elif module avail ncbi-blast 2>&1 | grep -q ncbi-blast; then
+    module load ncbi-blast
+    echo "Loaded ncbi-blast module (provides NCBI tools)"
 elif module avail ncbi 2>&1 | grep -q ncbi; then
     module load ncbi
     echo "Loaded ncbi module"
 else
     echo "NCBI datasets module not found; HTTPS downloads will be used if needed"
+    echo "Run 'module keyword ncbi' to see available NCBI-related modules on this cluster"
 fi
 
 module list

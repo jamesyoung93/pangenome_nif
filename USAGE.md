@@ -118,7 +118,9 @@ If required modules are missing:
 ```bash
 module avail python
 module avail mmseqs
-module avail ncbi
+module keyword ncbi
+# On Innovator, NCBI tools are exposed as 'ncbi-blast/2.14.1'
+module load ncbi-blast/2.14.1
 ```
 
 Contact your HPC administrator if modules are unavailable.
