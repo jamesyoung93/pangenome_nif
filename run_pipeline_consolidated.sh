@@ -39,6 +39,30 @@ module purge
 module load StdEnv
 module load mmseqs2/15-6f452
 
+# Optional conda environment activation (set CONDA_ENV_NAME before submitting)
+if [ -n "${CONDA_ENV_NAME:-}" ]; then
+    echo "Activating conda environment: ${CONDA_ENV_NAME}"
+    if ! command -v conda >/dev/null 2>&1; then
+        # Attempt to source a common conda profile script if the shell does not know about conda yet
+        if [ -f "$HOME/miniconda3/etc/profile.d/conda.sh" ]; then
+            . "$HOME/miniconda3/etc/profile.d/conda.sh"
+        elif [ -f "$HOME/anaconda3/etc/profile.d/conda.sh" ]; then
+            . "$HOME/anaconda3/etc/profile.d/conda.sh"
+        elif [ -f "$HOME/.conda/etc/profile.d/conda.sh" ]; then
+            . "$HOME/.conda/etc/profile.d/conda.sh"
+        else
+            echo "ERROR: conda command not found. Load your conda module or add conda.sh to your PATH."
+            exit 1
+        fi
+    fi
+
+    if ! conda activate "$CONDA_ENV_NAME"; then
+        echo "ERROR: Failed to activate conda environment '$CONDA_ENV_NAME'." \
+             "Ensure the environment exists on the compute node."
+        exit 1
+    fi
+fi
+
 # Optional NCBI datasets module (used by the consolidated script if available)
 if module avail ncbi-datasets 2>&1 | grep -q ncbi-datasets; then
     module load ncbi-datasets

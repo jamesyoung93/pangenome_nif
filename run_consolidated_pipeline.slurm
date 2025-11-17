@@ -39,6 +39,30 @@ module list
 
 echo ""
 echo "Using pre-activated Python environment (venv or conda)"
+
+# Optional conda environment activation (set CONDA_ENV_NAME before submitting)
+if [ -n "${CONDA_ENV_NAME:-}" ]; then
+    echo "Activating conda environment: ${CONDA_ENV_NAME}"
+    if ! command -v conda >/dev/null 2>&1; then
+        if [ -f "$HOME/miniconda3/etc/profile.d/conda.sh" ]; then
+            . "$HOME/miniconda3/etc/profile.d/conda.sh"
+        elif [ -f "$HOME/anaconda3/etc/profile.d/conda.sh" ]; then
+            . "$HOME/anaconda3/etc/profile.d/conda.sh"
+        elif [ -f "$HOME/.conda/etc/profile.d/conda.sh" ]; then
+            . "$HOME/.conda/etc/profile.d/conda.sh"
+        else
+            echo "ERROR: conda command not found. Load your conda module or add conda.sh to your PATH."
+            exit 1
+        fi
+    fi
+
+    if ! conda activate "$CONDA_ENV_NAME"; then
+        echo "ERROR: Failed to activate conda environment '$CONDA_ENV_NAME'." \
+             "Ensure the environment exists on the compute node."
+        exit 1
+    fi
+fi
+
 python3 --version
 
 echo "Checking required Python packages..."
