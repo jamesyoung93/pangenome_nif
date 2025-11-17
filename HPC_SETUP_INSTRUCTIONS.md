@@ -181,7 +181,11 @@ Save with `Ctrl+O`, `Enter`, then exit with `Ctrl+X`.
 Submit the pipeline to the SLURM scheduler:
 
 ```bash
-sbatch run_consolidated_pipeline.slurm
+# If using a conda environment, export its name so the batch job activates it
+CONDA_ENV_NAME=pangenome2 sbatch run_consolidated_pipeline.slurm
+
+# Without conda, omit CONDA_ENV_NAME (the job will use the current Python modules)
+# sbatch run_consolidated_pipeline.slurm
 ```
 
 You should see output like:
