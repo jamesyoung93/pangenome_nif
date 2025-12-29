@@ -59,6 +59,12 @@ if missing:
     sys.exit(1)
 PY
 
+# Fail fast if HMMER is missing before starting downloads
+if ! command -v hmmsearch >/dev/null 2>&1; then
+  echo "ERROR: hmmsearch (HMMER) is not on your PATH. Install HMMER or load your cluster module (e.g., 'module load hmmer/3.4')." >&2
+  exit 1
+fi
+
 export ENTREZ_EMAIL
 
 pushd "${UPSTREAM_ROOT}" >/dev/null
