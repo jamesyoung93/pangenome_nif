@@ -1,4 +1,4 @@
-import time, shutil, subprocess, urllib.request
+import os, time, shutil, subprocess, urllib.request
 from pathlib import Path
 
 def ensure_dir(p: Path) -> Path:
@@ -30,19 +30,29 @@ def run_cmd(cmd, check=True, capture=False):
     else:
         subprocess.run(cmd, check=check)
 
+def _resolve_executable(default_name: str, env_vars=()):
+    """Return the first existing executable path from env vars or PATH."""
+    # Highest priority: explicit env var paths
+    for env in env_vars:
+        val = os.getenv(env, "").strip()
+        if val:
+            # allow either a name on PATH or an absolute path
+            path = shutil.which(val) or (val if Path(val).exists() else None)
+            if path:
+                return path
+    return shutil.which(default_name)
+
+def hmmsearch_path():
+    return _resolve_executable("hmmsearch", env_vars=("NIF_HMMSEARCH_BIN", "HMMSEARCH_BIN", "HMMSEARCH"))
+
+def hmmbuild_path():
+    return _resolve_executable("hmmbuild", env_vars=("NIF_HMMBUILD_BIN", "HMMBUILD_BIN", "HMMBUILD"))
+
 def hmmsearch_available():
-    try:
-        subprocess.run(["hmmsearch", "-h"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
-        return True
-    except Exception:
-        return False
+    return bool(hmmsearch_path())
 
 def hmmbuild_available():
-    try:
-        subprocess.run(["hmmbuild", "-h"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
-        return True
-    except Exception:
-        return False
+    return bool(hmmbuild_path())
 
 def open_text(path: Path):
     return open(path, "rt", encoding="utf-8", errors="ignore")

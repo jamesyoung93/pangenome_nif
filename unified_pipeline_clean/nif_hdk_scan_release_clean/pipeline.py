@@ -8,7 +8,8 @@ import pandas as pd
 from Bio import Entrez
 from util import (
     ensure_dir, ftp_to_https, http_download, run_cmd,
-    hmmsearch_available, hmmbuild_available, parse_tblout
+    hmmsearch_available, hmmbuild_available, parse_tblout,
+    hmmsearch_path
 )
 
 ROOT = Path(__file__).resolve().parent
@@ -32,7 +33,17 @@ def query_ncbi():
     entrez_setup()
     out_dir = ensure_dir(ROOT / cfg["paths"]["results"] / "assemblies")
     term = cfg["taxonomy"]["taxon_query"]
-    levels = cfg["taxonomy"]["assembly_level"]
+
+    def _assembly_levels():
+        env_levels = os.getenv("NIF_ASSEMBLY_LEVELS", "").strip()
+        if env_levels:
+            parts = [p.strip() for p in env_levels.split(",") if p.strip()]
+            if parts:
+                print(f"Overriding assembly levels via NIF_ASSEMBLY_LEVELS -> {parts}", file=sys.stderr)
+                return parts
+        return cfg["taxonomy"]["assembly_level"]
+
+    levels = _assembly_levels()
     refseq_only = cfg["taxonomy"]["refseq_only"]
 
     level_term = " OR ".join([f'"{lvl}"[Assembly Level]' for lvl in levels])
@@ -208,8 +219,12 @@ def build_missing_hmms(refs):
 
 def run_hmmsearch_all(hmms_by_subunit):
     cfg = load_cfg()
-    if not hmmsearch_available():
-        print("ERROR: hmmsearch is not available on PATH. Install HMMER.", file=sys.stderr)
+    hmm_bin = hmmsearch_path()
+    if not hmm_bin:
+        print(
+            "ERROR: hmmsearch is not available. Install HMMER, load your cluster module (e.g., 'module load hmmer/3.4'), or set NIF_HMMSEARCH_BIN to the hmmsearch path.",
+            file=sys.stderr,
+        )
         sys.exit(2)
     combined = ROOT / cfg["paths"]["combined_proteins"]
     if not combined.exists():
@@ -224,7 +239,7 @@ def run_hmmsearch_all(hmms_by_subunit):
             tbl   = out_dir / f"{sub}__{stem}.tblout"
             domtb = out_dir / f"{sub}__{stem}.domtblout"
             cmd = [
-                "hmmsearch","--cpu", cpu, "--noali",
+                hmm_bin,"--cpu", cpu, "--noali",
                 "--tblout", str(tbl),
                 "--domtblout", str(domtb),
                 str(hmm), str(combined)
