@@ -5,11 +5,12 @@ ROOT="$(cd "$(dirname "$0")" && pwd)"; cd "$ROOT"
 STAMP_DIR="results/.stamps"; mkdir -p "$STAMP_DIR" logs results
 SUMMARIZER="scripts/summarize_robust_fixcase.py"
 
-subset=""; force=""; with_meta=0
+subset=""; force=""; with_meta=0; assembly_levels=""
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --subset) subset="$2"; shift 2;;
     --force)  force="$2"; shift 2;;
+    --assembly-levels) assembly_levels="$2"; shift 2;;
     --with-metadata|--with_meta|--metadata) with_meta=1; shift;;
     *) echo "Unknown arg: $1"; exit 2;;
   esac
@@ -31,6 +32,10 @@ clear_from(){
   esac
 }
 [[ -n "${force:-}" ]] && clear_from "$force"
+
+if [[ -n "$assembly_levels" ]]; then
+  export NIF_ASSEMBLY_LEVELS="$assembly_levels"
+fi
 
 # Required for NCBI
 : "${ENTREZ_EMAIL:?Please export ENTREZ_EMAIL (e.g. export ENTREZ_EMAIL=you@org)}"
