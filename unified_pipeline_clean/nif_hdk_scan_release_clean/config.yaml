@@ -1,0 +1,23 @@
+paths:
+  results: results
+  assemblies_tsv: results/assemblies/assemblies.tsv
+  combined_proteins: results/proteomes/combined_proteins.faa
+
+taxonomy:
+  taxon_query: 'txid1117[Organism:exp]'         # Cyanobacteria
+  assembly_level: ['complete genome','chromosome','scaffold','contig']
+  refseq_only: false
+
+download:
+  out_dir: results/downloads
+  timeout_sec: 60
+  max_retries: 3
+
+refs:
+  hmm_dir: refs/hmms
+  fasta_dir: refs/fastas
+
+scan:
+  hmm_out_dir: results/hmmer
+  evalue_threshold: 1e-30        # tighten/relax as needed
+  cpu: 32                        # adjust to your node
