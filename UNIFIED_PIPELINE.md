@@ -8,7 +8,9 @@ through multiple scripts.
 
 ## Prerequisites
 - Internet access for NCBI downloads
-- `bash`, `python3`, `mmseqs2`, and `hmmer` on your PATH
+- `bash`, `python3`, `mmseqs2`, and `hmmer` on your PATH (the wrapper now exits
+  immediately if `hmmsearch` is missing so you don't waste time downloading
+  proteomes)
 - Python packages required by `nif_hdk_scan_release_clean` and
   `nif_downstream_code/pangenome_pipeline_consolidated2.py`
 - `ENTREZ_EMAIL` set (can also be edited in the script header)
