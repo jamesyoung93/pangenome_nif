@@ -29,6 +29,9 @@ Outputs land in `unified_pipeline_run/results/`.
 ## Adjusting parameters
 Open `run_unified_pipeline.sh` and edit the block under
 `# --- User-tunable settings ---`. Examples:
+- Restrict the upstream fetch to complete genomes (default). To broaden it, set
+  `UPSTREAM_ASSEMBLY_LEVELS="complete genome,chromosome,scaffold,contig"` or any
+  comma-separated list recognized by NCBI.
 - Limit the upstream fetch to 200 assemblies for a smoke test:
   `UPSTREAM_SUBSET=200`
 - Skip the downstream protein downloads if you already have them in place:
