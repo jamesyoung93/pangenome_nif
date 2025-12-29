@@ -8,6 +8,8 @@ UPSTREAM_SUBSET=""                                 # e.g., 200 to smoke test
 UPSTREAM_WITH_METADATA=1                            # 1 to fetch metadata/checkM
 UPSTREAM_FORCE=""                                   # e.g., query|download|scan|all
 UPSTREAM_ASSEMBLY_LEVELS="complete genome"          # comma-separated; empty = config defaults
+HMMSEARCH_CMD="${HMMSEARCH_CMD:-hmmsearch}"        # override to a fully qualified hmmsearch path
+HMMER_MODULE="${HMMER_MODULE:-}"                    # optional: module name to auto-load if hmmsearch is missing
 
 RUN_DIR="unified_pipeline_run"                     # downstream working dir
 DOWNSTREAM_OUTPUT_ROOT="results"                   # saved under ${RUN_DIR}/
@@ -59,11 +61,31 @@ if missing:
     sys.exit(1)
 PY
 
-# Fail fast if HMMER is missing before starting downloads
-if ! command -v hmmsearch >/dev/null 2>&1; then
-  echo "ERROR: hmmsearch (HMMER) is not on your PATH. Install HMMER or load your cluster module (e.g., 'module load hmmer/3.4')." >&2
+# Try to make hmmsearch available (honor HMMSEARCH_CMD and optional module)
+if [[ "${HMMSEARCH_CMD}" == */* && -x "${HMMSEARCH_CMD}" ]]; then
+  PATH="$(dirname "${HMMSEARCH_CMD}"):${PATH}"
+fi
+
+if ! command -v "${HMMSEARCH_CMD}" >/dev/null 2>&1; then
+  if [[ -n "${HMMER_MODULE}" ]] && command -v module >/dev/null 2>&1; then
+    # shellcheck disable=SC1091
+    module load "${HMMER_MODULE}" >/dev/null 2>&1 || true
+  fi
+fi
+
+# Fail fast if HMMER is still missing before starting downloads
+if ! command -v "${HMMSEARCH_CMD}" >/dev/null 2>&1; then
+  cat >&2 <<'EOF'
+ERROR: hmmsearch (HMMER) is not on your PATH.
+Either:
+  * export HMMSEARCH_CMD=/path/to/hmmsearch, or
+  * set HMMER_MODULE (e.g., hmmer/3.4) so the script can `module load` it, or
+  * manually load your cluster's HMMER module before running.
+EOF
   exit 1
 fi
+
+export HMMSEARCH_CMD
 
 export ENTREZ_EMAIL
 

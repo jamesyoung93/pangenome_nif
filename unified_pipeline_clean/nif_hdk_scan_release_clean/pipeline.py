@@ -8,7 +8,8 @@ import pandas as pd
 from Bio import Entrez
 from util import (
     ensure_dir, ftp_to_https, http_download, run_cmd,
-    hmmsearch_available, hmmbuild_available, parse_tblout
+    hmmsearch_available, hmmbuild_available, parse_tblout,
+    HMMSEARCH_CMD
 )
 
 ROOT = Path(__file__).resolve().parent
@@ -237,7 +238,7 @@ def run_hmmsearch_all(hmms_by_subunit):
             tbl   = out_dir / f"{sub}__{stem}.tblout"
             domtb = out_dir / f"{sub}__{stem}.domtblout"
             cmd = [
-                "hmmsearch","--cpu", cpu, "--noali",
+                HMMSEARCH_CMD,"--cpu", cpu, "--noali",
                 "--tblout", str(tbl),
                 "--domtblout", str(domtb),
                 str(hmm), str(combined)
