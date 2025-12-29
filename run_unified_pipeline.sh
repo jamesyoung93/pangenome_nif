@@ -7,6 +7,7 @@ UPSTREAM_DIR="nif_hdk_scan_release_clean"          # path to nifH/D/K scan pipel
 UPSTREAM_SUBSET=""                                 # e.g., 200 to smoke test
 UPSTREAM_WITH_METADATA=1                            # 1 to fetch metadata/checkM
 UPSTREAM_FORCE=""                                   # e.g., query|download|scan|all
+UPSTREAM_ASSEMBLY_LEVELS="complete genome"          # comma-separated; empty = config defaults
 
 RUN_DIR="unified_pipeline_run"                     # downstream working dir
 DOWNSTREAM_OUTPUT_ROOT="results"                   # saved under ${RUN_DIR}/
@@ -32,12 +33,24 @@ DOWNSTREAM_SCRIPT="${ROOT}/nif_downstream_code/pangenome_pipeline_consolidated2.
 [[ -x "${UPSTREAM_ROOT}/run_nifhdk_repro.sh" ]] || { echo "Missing upstream driver at ${UPSTREAM_ROOT}"; exit 1; }
 [[ -f "${DOWNSTREAM_SCRIPT}" ]] || { echo "Missing downstream script at ${DOWNSTREAM_SCRIPT}"; exit 1; }
 
+require_cmd(){
+  if ! command -v "$1" >/dev/null 2>&1; then
+    echo "ERROR: '$1' not found on PATH. Install HMMER or load your site module (e.g., 'module load hmmer/3.4')." >&2
+    exit 2
+  fi
+}
+
+# Ensure HMMER binaries are available before kicking off the upstream scan
+require_cmd hmmsearch
+require_cmd hmmbuild
+
 export ENTREZ_EMAIL
 
 pushd "${UPSTREAM_ROOT}" >/dev/null
 UP_ARGS=()
 [[ -n "${UPSTREAM_SUBSET}" ]] && UP_ARGS+=(--subset "${UPSTREAM_SUBSET}")
 [[ -n "${UPSTREAM_FORCE}" ]] && UP_ARGS+=(--force "${UPSTREAM_FORCE}")
+[[ -n "${UPSTREAM_ASSEMBLY_LEVELS}" ]] && UP_ARGS+=(--assembly-levels "${UPSTREAM_ASSEMBLY_LEVELS}")
 [[ ${UPSTREAM_WITH_METADATA} -eq 1 ]] && UP_ARGS+=(--with-metadata)
 bash run_nifhdk_repro.sh "${UP_ARGS[@]:+${UP_ARGS[@]}}"
 popd >/dev/null

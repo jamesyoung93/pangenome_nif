@@ -18,6 +18,9 @@ For the nifH/D/K scan, the quickest setup is:
 mamba env create -f nif_hdk_scan_release_clean/env/environment.yml
 mamba activate nifhdk
 module load hmmer/3.4   # or install hmmer into the env
+# Verify HMMER is active
+which hmmsearch
+which hmmbuild
 ```
 
 ## One-line run (default settings)
@@ -29,6 +32,9 @@ Outputs land in `unified_pipeline_run/results/`.
 ## Adjusting parameters
 Open `run_unified_pipeline.sh` and edit the block under
 `# --- User-tunable settings ---`. Examples:
+- Restrict the upstream fetch to complete genomes (default). To broaden it, set
+  `UPSTREAM_ASSEMBLY_LEVELS="complete genome,chromosome,scaffold,contig"` or any
+  comma-separated list recognized by NCBI.
 - Limit the upstream fetch to 200 assemblies for a smoke test:
   `UPSTREAM_SUBSET=200`
 - Skip the downstream protein downloads if you already have them in place:
