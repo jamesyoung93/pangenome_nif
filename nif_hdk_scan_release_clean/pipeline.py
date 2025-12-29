@@ -32,7 +32,17 @@ def query_ncbi():
     entrez_setup()
     out_dir = ensure_dir(ROOT / cfg["paths"]["results"] / "assemblies")
     term = cfg["taxonomy"]["taxon_query"]
-    levels = cfg["taxonomy"]["assembly_level"]
+
+    def _assembly_levels():
+        env_levels = os.getenv("NIF_ASSEMBLY_LEVELS", "").strip()
+        if env_levels:
+            parts = [p.strip() for p in env_levels.split(",") if p.strip()]
+            if parts:
+                print(f"Overriding assembly levels via NIF_ASSEMBLY_LEVELS -> {parts}", file=sys.stderr)
+                return parts
+        return cfg["taxonomy"]["assembly_level"]
+
+    levels = _assembly_levels()
     refseq_only = cfg["taxonomy"]["refseq_only"]
 
     level_term = " OR ".join([f'"{lvl}"[Assembly Level]' for lvl in levels])
@@ -209,7 +219,10 @@ def build_missing_hmms(refs):
 def run_hmmsearch_all(hmms_by_subunit):
     cfg = load_cfg()
     if not hmmsearch_available():
-        print("ERROR: hmmsearch is not available on PATH. Install HMMER.", file=sys.stderr)
+        print(
+            "ERROR: hmmsearch is not available on PATH. Install HMMER or load your cluster module (e.g., 'module load hmmer/3.4').",
+            file=sys.stderr,
+        )
         sys.exit(2)
     combined = ROOT / cfg["paths"]["combined_proteins"]
     if not combined.exists():

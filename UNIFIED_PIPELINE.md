@@ -18,6 +18,9 @@ For the nifH/D/K scan, the quickest setup is:
 mamba env create -f nif_hdk_scan_release_clean/env/environment.yml
 mamba activate nifhdk
 module load hmmer/3.4   # or install hmmer into the env
+# Verify HMMER is active
+which hmmsearch
+which hmmbuild
 ```
 
 ## One-line run (default settings)
@@ -26,9 +29,34 @@ module load hmmer/3.4   # or install hmmer into the env
 ```
 Outputs land in `unified_pipeline_run/results/`.
 
+### Fast rerun from an HPC scratch directory
+If you cloned into a scratch path (for example
+`/mmfs1/scratch/jacks.local/jyoung67391/pangenome_nif`) and want to restart
+cleanly:
+1. Stop any running job for this pipeline.
+2. Remove the old checkout to clear prior outputs: `rm -rf /mmfs1/scratch/jacks.local/jyoung67391/pangenome_nif`.
+3. Recreate and clone fresh:
+   ```bash
+   mkdir -p /mmfs1/scratch/jacks.local/jyoung67391/pangenome_nif
+   cd /mmfs1/scratch/jacks.local/jyoung67391/pangenome_nif
+   git clone https://github.com/jamesyoung93/pangenome_nif.git .
+   ```
+4. Activate your env and reinstall requirements if needed:
+   `python -m pip install -r requirements.txt` (and `module load hmmer/3.4` on this
+   cluster since HMMER is provided as a module).
+5. Export your NCBI contact email and rerun:
+   ```bash
+   export ENTREZ_EMAIL="you@example.org"
+   ./run_unified_pipeline.sh
+   ```
+
+
 ## Adjusting parameters
 Open `run_unified_pipeline.sh` and edit the block under
 `# --- User-tunable settings ---`. Examples:
+- Restrict the upstream fetch to complete genomes (default). To broaden it, set
+  `UPSTREAM_ASSEMBLY_LEVELS="complete genome,chromosome,scaffold,contig"` or any
+  comma-separated list recognized by NCBI.
 - Limit the upstream fetch to 200 assemblies for a smoke test:
   `UPSTREAM_SUBSET=200`
 - Skip the downstream protein downloads if you already have them in place:
