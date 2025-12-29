@@ -86,6 +86,11 @@ step_summarize(){
 }
 step_metadata(){
   [[ "$with_meta" -eq 1 ]] || return 0
+  if ! command -v datasets >/dev/null 2>&1; then
+    echo "ERROR: required NCBI 'datasets' CLI not found." >&2
+    echo "Install with 'pip install ncbi-datasets-cli' or see https://www.ncbi.nlm.nih.gov/datasets/docs/v2/download-and-install/." >&2
+    exit 1
+  fi
   echo "[metadata] fetching NCBI assembly metadata…"
   mkdir -p results/assemblies
   cut -f1 results/assemblies/assemblies.tsv | sed '1d' | sort -u > results/assemblies/asm_list.txt
