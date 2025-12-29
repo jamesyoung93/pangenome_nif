@@ -32,6 +32,32 @@ DOWNSTREAM_SCRIPT="${ROOT}/nif_downstream_code/pangenome_pipeline_consolidated2.
 [[ -x "${UPSTREAM_ROOT}/run_nifhdk_repro.sh" ]] || { echo "Missing upstream driver at ${UPSTREAM_ROOT}"; exit 1; }
 [[ -f "${DOWNSTREAM_SCRIPT}" ]] || { echo "Missing downstream script at ${DOWNSTREAM_SCRIPT}"; exit 1; }
 
+python - <<'PY'
+import importlib, sys
+deps = {
+    "yaml": "PyYAML",
+    "Bio": "biopython",
+    "pandas": "pandas",
+    "tqdm": "tqdm",
+    "numpy": "numpy",
+    "sklearn": "scikit-learn",
+    "matplotlib": "matplotlib",
+    "seaborn": "seaborn",
+    "xgboost": "xgboost",
+}
+missing = []
+for mod, pkg in deps.items():
+    try:
+        importlib.import_module(mod)
+    except ImportError:
+        missing.append(pkg)
+
+if missing:
+    print("Missing Python packages: " + ", ".join(sorted(set(missing))), file=sys.stderr)
+    print("Install them with: python -m pip install -r requirements.txt", file=sys.stderr)
+    sys.exit(1)
+PY
+
 export ENTREZ_EMAIL
 
 pushd "${UPSTREAM_ROOT}" >/dev/null

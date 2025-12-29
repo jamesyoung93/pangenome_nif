@@ -12,7 +12,9 @@ This folder is a trimmed copy of the unified pipeline so you can seed a fresh re
 # start in the directory that contains this folder
 cd unified_pipeline_clean
 
-# ensure dependencies (bash, python3, mmseqs2, hmmer, curl, sklearn, matplotlib, scipy, pandas, numpy, seaborn, xgboost optional)
+# ensure dependencies (bash, python3, mmseqs2, hmmer, curl)
+# install Python packages once (includes PyYAML + Biopython needed upstream)
+python -m pip install -r requirements.txt
 # set your NCBI contact email for downloads
 export ENTREZ_EMAIL="you@example.org"
 
