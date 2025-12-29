@@ -1,5 +1,8 @@
+import os
 import time, shutil, subprocess, urllib.request
 from pathlib import Path
+
+HMMSEARCH_CMD = os.environ.get("HMMSEARCH_CMD", "hmmsearch")
 
 def ensure_dir(p: Path) -> Path:
     p.mkdir(parents=True, exist_ok=True)
@@ -32,7 +35,7 @@ def run_cmd(cmd, check=True, capture=False):
 
 def hmmsearch_available():
     try:
-        subprocess.run(["hmmsearch", "-h"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
+        subprocess.run([HMMSEARCH_CMD, "-h"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
         return True
     except Exception:
         return False

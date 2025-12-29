@@ -29,6 +29,7 @@ Outputs land in `unified_pipeline_run/results/`.
 - Adjust user-tunable variables at the top of `run_unified_pipeline.sh` (e.g., `UPSTREAM_SUBSET`, `DOWNSTREAM_SKIP_DOWNLOAD`, `DOWNSTREAM_MMSEQS_ID`).
 - To run only the downstream portion on pre-downloaded proteins, set `DOWNSTREAM_SKIP_DOWNLOAD=1` and place `.faa` files under `unified_pipeline_run/downloads/proteins/` before running.
 - For the comparative experiment matrix, set `DOWNSTREAM_MODE="comparative_experiment_matrix"`.
+- If HMMER is installed outside your default `PATH`, set `HMMSEARCH_CMD` to the full `hmmsearch` path or set `HMMER_MODULE` (e.g., `hmmer/3.4`) so the wrapper can `module load` it automatically.
 
 ## Contents
 
