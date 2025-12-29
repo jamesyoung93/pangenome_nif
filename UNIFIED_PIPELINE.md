@@ -18,6 +18,9 @@ For the nifH/D/K scan, the quickest setup is:
 mamba env create -f nif_hdk_scan_release_clean/env/environment.yml
 mamba activate nifhdk
 module load hmmer/3.4   # or install hmmer into the env
+# Verify HMMER is active
+which hmmsearch
+which hmmbuild
 ```
 
 ## One-line run (default settings)

@@ -219,7 +219,10 @@ def build_missing_hmms(refs):
 def run_hmmsearch_all(hmms_by_subunit):
     cfg = load_cfg()
     if not hmmsearch_available():
-        print("ERROR: hmmsearch is not available on PATH. Install HMMER.", file=sys.stderr)
+        print(
+            "ERROR: hmmsearch is not available on PATH. Install HMMER or load your cluster module (e.g., 'module load hmmer/3.4').",
+            file=sys.stderr,
+        )
         sys.exit(2)
     combined = ROOT / cfg["paths"]["combined_proteins"]
     if not combined.exists():

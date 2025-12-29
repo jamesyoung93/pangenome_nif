@@ -33,6 +33,17 @@ DOWNSTREAM_SCRIPT="${ROOT}/nif_downstream_code/pangenome_pipeline_consolidated2.
 [[ -x "${UPSTREAM_ROOT}/run_nifhdk_repro.sh" ]] || { echo "Missing upstream driver at ${UPSTREAM_ROOT}"; exit 1; }
 [[ -f "${DOWNSTREAM_SCRIPT}" ]] || { echo "Missing downstream script at ${DOWNSTREAM_SCRIPT}"; exit 1; }
 
+require_cmd(){
+  if ! command -v "$1" >/dev/null 2>&1; then
+    echo "ERROR: '$1' not found on PATH. Install HMMER or load your site module (e.g., 'module load hmmer/3.4')." >&2
+    exit 2
+  fi
+}
+
+# Ensure HMMER binaries are available before kicking off the upstream scan
+require_cmd hmmsearch
+require_cmd hmmbuild
+
 export ENTREZ_EMAIL
 
 pushd "${UPSTREAM_ROOT}" >/dev/null
