@@ -68,6 +68,8 @@ module purge
 module load StdEnv
 module load python/3.12
 module load mmseqs2/15-6f452
+# HMMER for hmmsearch/hmmbuild
+module load hmmer/3.4
 # For NCBI utilities
 module keyword ncbi        # shows available NCBI-related modules
 module load ncbi-blast/2.14.1
@@ -76,6 +78,22 @@ module load ncbi-blast/2.14.1
 If your site uses a different module name, run `module keyword ncbi` and load
 the closest match. The pipeline will fall back to direct HTTPS downloads if no
 NCBI module is available.
+
+To check which HMMER build is available on the cluster, use the module search
+tools:
+
+```bash
+module avail hmmer    # lists any hmmer modules on your site
+module spider hmmer   # shows all versions and how to load them
+module show hmmer/3.4 # replace 3.4 with the version you want to inspect
+
+# Confirm HMMER is active on your PATH
+which hmmsearch
+which hmmbuild
+```
+
+`module spider` prints the exact modulefile path and any prerequisites so you
+can load the precise HMMER version needed for your run.
 
 ### Step 4: Create and activate your Python environment (required)
 
