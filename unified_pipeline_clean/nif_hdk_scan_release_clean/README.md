@@ -6,4 +6,4 @@ Quick steps:
 4) Put HMMs under `refs/hmms/nif{H,D,K}/*.hmm` (already included here if you had them).
 5) Smoke test: `bash run_nifhdk_repro.sh --subset 200`
 6) Full run:  `bash run_nifhdk_repro.sh`
-7) Add metadata (optional): `bash run_nifhdk_repro.sh --with-metadata`
+7) Add metadata (optional): `bash run_nifhdk_repro.sh --with-metadata` (requires the NCBI `datasets` CLI, e.g., `pip install ncbi-datasets-cli`)
