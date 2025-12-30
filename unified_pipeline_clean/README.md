@@ -24,17 +24,37 @@ export ENTREZ_EMAIL="you@example.org"
 
 Outputs land in `unified_pipeline_run/results/`.
 
+### Genome filtering policy
+
+- By default, downstream steps **only** accept assemblies that are both `GCF_*` (RefSeq) **and** `Complete Genome`.
+- The upstream `assembly_quality.tsv` is staged to `unified_pipeline_run/results/assemblies/` and filtered into:
+  - `assembly_quality.filtered.tsv`
+  - `filtered_accessions.txt`
+  - `filter_summary.json`
+- To relax the defaults, pass `--allow-gca` and/or `--allow-noncomplete` through downstream args (or edit `config.yaml`).
+
+### Modeling outputs
+
+- The unified run now executes the full classification + directionality steps (`04_classify.py` and `05_analyze_feature_directionality.py`).
+- Key artifacts are copied into `unified_pipeline_run/results/modeling/`:
+  - `feature_importance_top.csv`, `feature_importance_*.csv`, `fold_metrics_*.csv`
+  - `feature_directionality_*.csv`, `feature_directionality_summary.csv`
+  - plots such as `feature_importance_plot.png`
+- The default mode is full pipeline; pass `--mode experiment` to enable comparative experiment matrix mode explicitly.
+
 ## Customization
 
 - Adjust user-tunable variables at the top of `run_unified_pipeline.sh` (e.g., `UPSTREAM_SUBSET`, `DOWNSTREAM_SKIP_DOWNLOAD`, `DOWNSTREAM_MMSEQS_ID`).
 - To run only the downstream portion on pre-downloaded proteins, set `DOWNSTREAM_SKIP_DOWNLOAD=1` and place `.faa` files under `unified_pipeline_run/downloads/proteins/` before running.
 - For the comparative experiment matrix, set `DOWNSTREAM_MODE="comparative_experiment_matrix"`.
 - If HMMER is installed outside your default `PATH`, set `HMMSEARCH_CMD` to the full `hmmsearch` path or set `HMMER_MODULE` (e.g., `hmmer/3.4`) so the wrapper can `module load` it automatically.
+- Ensure `mmseqs` and `hmmsearch` are available on PATH (for example HPC modules `mmseqs2/15-6f452` and `hmmer/3.4`). Python requirements include scikit-learn, seaborn, matplotlib, and xgboost for modeling steps.
 
 ## Contents
 
 ```
 run_unified_pipeline.sh
+nif_downstream_code/            # uses root-level canonical scripts
 nif_hdk_scan_release_clean/
   README.md
   config.yaml
@@ -58,3 +78,6 @@ nif_downstream_code/
 
 - No sample results or archives are included; the upstream scan will populate `nif_hdk_scan_release_clean/results/` on first run.
 - Keep this folder as the root of your new repository so relative paths in the scripts stay valid.
+- Post-run validation (under `unified_pipeline_run/results/`):
+  - `assemblies/filtered_accessions.txt` exists and lists only `GCF_*` complete genomes
+  - `modeling/feature_importance_top.csv`, `modeling/fold_metrics_*.csv`, and `modeling/feature_importance_*.csv` are present

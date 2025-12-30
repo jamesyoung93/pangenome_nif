@@ -29,8 +29,9 @@ DOWNSTREAM_EXPERIMENT_MODEL="xgboost"              # only used in experiment mod
 # ----------------------------------------------------------------------------
 
 ROOT="$(cd "$(dirname "$0")" && pwd)"
+REPO_ROOT="$(cd "${ROOT}/.." && pwd)"
 UPSTREAM_ROOT="${ROOT}/${UPSTREAM_DIR}"
-DOWNSTREAM_SCRIPT="${ROOT}/nif_downstream_code/pangenome_pipeline_consolidated2.py"
+DOWNSTREAM_SCRIPT="${REPO_ROOT}/nif_downstream_code/pangenome_pipeline_consolidated2.py"
 
 [[ -x "${UPSTREAM_ROOT}/run_nifhdk_repro.sh" ]] || { echo "Missing upstream driver at ${UPSTREAM_ROOT}"; exit 1; }
 [[ -f "${DOWNSTREAM_SCRIPT}" ]] || { echo "Missing downstream script at ${DOWNSTREAM_SCRIPT}"; exit 1; }
@@ -106,6 +107,16 @@ fi
 
 mkdir -p "${ROOT}/${RUN_DIR}"
 cp -f "${UPSTREAM_OUT}" "${ROOT}/${RUN_DIR}/nif_hdk_hits_enriched_with_quality_checkm.csv"
+
+# stage assembly quality metadata for filtering
+mkdir -p "${ROOT}/${RUN_DIR}/${DOWNSTREAM_OUTPUT_ROOT}/assemblies"
+if [[ -f "${UPSTREAM_ROOT}/results/assemblies/assembly_quality.tsv" ]]; then
+  cp -f "${UPSTREAM_ROOT}/results/assemblies/assembly_quality.tsv" \
+    "${ROOT}/${RUN_DIR}/${DOWNSTREAM_OUTPUT_ROOT}/assemblies/assembly_quality.tsv"
+else
+  echo "ERROR: Expected assembly quality table at ${UPSTREAM_ROOT}/results/assemblies/assembly_quality.tsv" >&2
+  exit 1
+fi
 
 pushd "${ROOT}/${RUN_DIR}" >/dev/null
 
