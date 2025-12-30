@@ -31,8 +31,19 @@ if a.quality:
   qual={}
   with open(a.quality,encoding="utf-8") as f:
     rq=csv.DictReader(f,delimiter="\t")
-    qcols=[c for c in rq.fieldnames if c!="accession"]
-    for q in rq: qual[q["accession"]]=q
+    # Find an accession-like column name; older files used "accession" while
+    # newer NCBI outputs sometimes use "assembly_accession".
+    acc_col=None
+    for cand in ("accession","assembly_accession","assembly", "assembly accession"):
+      if cand in (rq.fieldnames or []):
+        acc_col=cand; break
+    if acc_col is None:
+      raise SystemExit(f"No accession column found in {a.quality}; columns={rq.fieldnames}")
+    qcols=[c for c in rq.fieldnames if c!=acc_col]
+    for q in rq:
+      acc_val=q.get(acc_col)
+      if not acc_val: continue
+      qual[acc_val]=q
   for row in rows:
     q=qual.get(row["assembly_accession"],{})
     for c in qcols: row[c]=q.get(c,"")
