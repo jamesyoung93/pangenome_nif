@@ -51,5 +51,5 @@ with open(a.inp, encoding="utf-8") as f:
         })
 cols=["accession","organism_name","assembly_level","number_of_contigs","contig_n50","number_of_scaffolds","scaffold_n50","total_ungapped_length","gc_percent","coverage","annotation_name","annotation_date","checkm_completeness","checkm_contamination","genome_notes","derived_from_metagenome","annotation_fails_MAG_check"]
 with open(a.out,"w",newline="",encoding="utf-8") as o:
-    w=csv.DictWriter(o,fieldnames=cols,extrasaction="ignore"); w.writeheader(); w.writerows(rows)
+    w=csv.DictWriter(o,fieldnames=cols,extrasaction="ignore",delimiter="\t"); w.writeheader(); w.writerows(rows)
 print("Wrote ->", a.out)
