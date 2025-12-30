@@ -84,10 +84,27 @@ step_summarize(){
     --thr 1e-5 |& tee -a logs/pipeline.summarize.log
   touch_ok "$STAMP_DIR/summarize.ok"
 }
+
+ensure_datasets_cli(){
+  if command -v datasets >/dev/null 2>&1; then
+    return 0
+  fi
+  if command -v python3 >/dev/null 2>&1; then
+    echo "[metadata] installing NCBI 'datasets' CLI via pip…" >&2
+    PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet --user ncbi-datasets-pylib || true
+    # refresh PATH for user installs if needed
+    PATH="$HOME/.local/bin:$PATH"
+    if command -v datasets >/dev/null 2>&1; then
+      echo "[metadata] 'datasets' CLI available after pip install" >&2
+      return 0
+    fi
+  fi
+  return 1
+}
 step_metadata(){
   [[ "$with_meta" -eq 1 ]] || return 0
-  if ! command -v datasets >/dev/null 2>&1; then
-    echo "ERROR: required NCBI 'datasets' CLI not found." >&2
+  if ! ensure_datasets_cli; then
+    echo "ERROR: required NCBI 'datasets' CLI not found and pip install failed." >&2
     echo "Install via 'mamba install -c conda-forge ncbi-datasets-cli' (or 'conda install ...')," >&2
     echo "load an HPC module such as 'module load ncbi-datasets', or see" >&2
     echo "https://www.ncbi.nlm.nih.gov/datasets/docs/v2/download-and-install/." >&2
