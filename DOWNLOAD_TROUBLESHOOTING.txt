@@ -32,7 +32,9 @@ You can run it in a screen/tmux session to keep it running if you disconnect:
 OPTION 2: Batch Download Using NCBI Datasets CLI
 ===============================================================================
 
-If you have the NCBI datasets tool installed, you can batch download:
+If you have the NCBI datasets tool installed (e.g., `module load ncbi-datasets`
+on HPC or `mamba install -c conda-forge ncbi-datasets-cli`), you can batch
+download:
 
 # Load module (if available)
 module load ncbi-datasets  # or similar
