@@ -60,6 +60,7 @@ from typing import Dict, List, Optional
 import subprocess
 import json
 import ast
+import shutil
 from datetime import datetime
 
 import pandas as pd
@@ -108,6 +109,12 @@ try:
 except Exception:
     HAS_ENTREZ = False
 
+try:
+    import yaml
+    HAS_YAML = True
+except Exception:
+    HAS_YAML = False
+
 
 # ============================================================================
 # GLOBAL CONFIGURATION
@@ -123,10 +130,14 @@ class PipelineConfig:
         # Inputs
         self.input_csv = "nif_hdk_hits_enriched_with_quality_checkm.csv"
         self.protein_dir = "downloads/proteins"
+        self.assembly_quality = "results/assemblies/assembly_quality.tsv"
 
         # Outputs
         self.output_root = "results"
         self.run_variants = "both"  # pipeline: baseline|genus|both
+        self.require_refseq_gcf = True
+        self.require_complete_genome = True
+        self.filtered_accessions_file: Optional[str] = None
 
         # Step 3 clustering
         self.mmseqs_identity = 0.8
@@ -159,6 +170,9 @@ class PipelineConfig:
         self.taxonomy_cache_path = None
         self.taxonomy_sleep = 0.34
 
+        # Provenance
+        self.repo_root = Path(__file__).resolve().parents[2] if "__file__" in globals() else Path.cwd()
+
         # Runtime
         self.non_interactive = False
 
@@ -170,6 +184,47 @@ class PipelineConfig:
 
 
 config = PipelineConfig()
+
+
+# ============================================================================
+# CONFIG HELPERS
+# ============================================================================
+
+def load_yaml_config():
+    """Load optional config.yaml to override defaults."""
+    if not HAS_YAML:
+        return
+
+    candidates = [
+        Path.cwd() / "config.yaml",
+        Path(__file__).resolve().parent / "config.yaml" if "__file__" in globals() else None,
+        (Path(__file__).resolve().parent.parent / "config.yaml") if "__file__" in globals() else None,
+        (Path(__file__).resolve().parents[2] / "unified_pipeline_clean" / "config.yaml") if "__file__" in globals() else None,
+    ]
+
+    for cand in candidates:
+        if cand and cand.exists():
+            try:
+                with open(cand, "r") as fh:
+                    data = yaml.safe_load(fh) or {}
+                if isinstance(data, dict):
+                    config.require_refseq_gcf = bool(data.get("require_refseq_gcf", config.require_refseq_gcf))
+                    config.require_complete_genome = bool(data.get("require_complete_genome", config.require_complete_genome))
+            except Exception as exc:
+                print(f"WARNING: Failed to parse config.yaml at {cand}: {exc}")
+            break
+
+
+def check_external_tools():
+    missing = []
+    for tool in ["mmseqs", "hmmsearch"]:
+        if shutil.which(tool) is None:
+            missing.append(tool)
+    if missing:
+        raise RuntimeError(
+            "Missing required external tools: " + ", ".join(missing) + ". "
+            "Ensure they are on PATH or loaded via your HPC module system."
+        )
 
 
 # ============================================================================
@@ -188,6 +243,71 @@ def extract_genus(organism_name):
     return organism_name.split()[0] if organism_name else ""
 
 
+def load_and_filter_assemblies(assembly_quality_path: Path, output_dir: Path):
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    if not assembly_quality_path.exists():
+        raise FileNotFoundError(f"Assembly quality file not found: {assembly_quality_path}")
+
+    try:
+        df = pd.read_csv(assembly_quality_path, sep=None, engine="python")
+    except Exception:
+        df = pd.read_csv(assembly_quality_path, sep="\t")
+
+    if "assembly_accession" not in df.columns:
+        raise RuntimeError("assembly_accession column missing from assembly quality table")
+
+    df["assembly_accession"] = df["assembly_accession"].astype(str).str.strip()
+    level_col = None
+    for candidate in ["assembly_level", "assembly_level_label", "assemblylevel"]:
+        if candidate in df.columns:
+            level_col = candidate
+            break
+    if level_col is None:
+        raise RuntimeError("assembly_level column missing from assembly quality table")
+
+    def _is_complete(val: str) -> bool:
+        return str(val).strip().lower() == "complete genome"
+
+    df["_is_refseq"] = df["assembly_accession"].str.startswith("GCF_")
+    df["_is_complete"] = df[level_col].apply(_is_complete)
+
+    filtered = df.copy()
+    if config.require_refseq_gcf:
+        filtered = filtered[filtered["_is_refseq"]]
+    if config.require_complete_genome:
+        filtered = filtered[filtered["_is_complete"]]
+
+    kept = filtered["assembly_accession"].unique().tolist()
+
+    summary = {
+        "total": int(len(df)),
+        "kept": int(len(kept)),
+        "dropped_by_refseq": int((~df["_is_refseq"]).sum()) if config.require_refseq_gcf else 0,
+        "dropped_by_completeness": int((~df["_is_complete"]).sum()) if config.require_complete_genome else 0,
+        "require_refseq_gcf": config.require_refseq_gcf,
+        "require_complete_genome": config.require_complete_genome,
+    }
+
+    if len(kept) == 0:
+        raise RuntimeError("No assemblies passed filtering (GCF + Complete Genome). Adjust config or inputs.")
+
+    filtered_path = output_dir / "assembly_quality.filtered.tsv"
+    filtered.to_csv(filtered_path, sep="\t", index=False)
+
+    acc_path = output_dir / "filtered_accessions.txt"
+    with open(acc_path, "w") as fh:
+        for acc in kept:
+            fh.write(f"{acc}\n")
+
+    with open(output_dir / "filter_summary.json", "w") as fh:
+        json.dump(summary, fh, indent=2)
+
+    print(f"[filter] kept {len(kept)} of {len(df)} assemblies (GCF + Complete Genome). wrote {acc_path}")
+
+    return kept
+
+
 def step1_prepare_data():
     print("\n" + "=" * 80)
     print("STEP 1: DATA PREPARATION AND LABELING")
@@ -197,6 +317,14 @@ def step1_prepare_data():
     if not os.path.exists(config.input_csv):
         print(f"ERROR: Input file not found: {config.input_csv}")
         return False
+
+    assemblies_dir = Path(config.output_root) / "assemblies"
+    try:
+        kept_accessions = load_and_filter_assemblies(Path(config.assembly_quality), assemblies_dir)
+    except Exception as exc:
+        print(f"ERROR: {exc}")
+        return False
+    config.filtered_accessions_file = str(assemblies_dir / "filtered_accessions.txt")
 
     df = pd.read_csv(config.input_csv, on_bad_lines="skip", engine="python")
     print(f"Total genomes loaded: {len(df)}")
@@ -215,8 +343,9 @@ def step1_prepare_data():
         print("ERROR: Missing 'assembly_level' column.")
         return False
 
-    complete = df[df["assembly_level"] == "Complete Genome"].copy()
-    print(f"Complete genomes: {len(complete)}")
+    df["assembly_level"] = df["assembly_level"].astype(str).str.strip()
+    complete = df[df["assembly_accession"].isin(kept_accessions)].copy()
+    print(f"Complete genomes after RefSeq/Complete filter: {len(complete)}")
 
     needed = ["nifH_best_evalue", "nifD_best_evalue", "nifK_best_evalue", "assembly_accession"]
     for c in needed:
@@ -249,8 +378,8 @@ def step2_download_proteins():
     print("STEP 2: DOWNLOAD PROTEIN SEQUENCES")
     print("=" * 80)
 
-    if not os.path.exists("genome_accessions.txt"):
-        print("ERROR: genome_accessions.txt not found. Run Step 1 first.")
+    if not config.filtered_accessions_file or not os.path.exists(config.filtered_accessions_file):
+        print("ERROR: filtered_accessions.txt not found. Run Step 1 first.")
         return False
 
     protein_dir = Path(config.protein_dir)
@@ -274,7 +403,7 @@ def step2_download_proteins():
     if download_script:
         cmd = [
             "python3", str(download_script),
-            "--nif-csv", config.input_csv,
+            "--accessions", config.filtered_accessions_file,
             "--outdir", "downloads",
             "--jobs", str(config.download_jobs),
             "--sleep", str(config.download_sleep),
@@ -426,6 +555,59 @@ def step3_create_gene_families():
     cluster_info.to_csv("gene_family_info.csv", index=False)
 
     complete_genomes.to_csv("complete_genomes_with_proteins.csv", index=False)
+    return True
+
+
+def _find_script(name: str) -> Optional[Path]:
+    candidates = [
+        config.repo_root / name,
+        Path(__file__).resolve().parent / name if "__file__" in globals() else None,
+        Path.cwd() / name,
+    ]
+    for cand in candidates:
+        if cand and cand.exists():
+            return cand
+    return None
+
+
+def _collect_modeling_artifacts():
+    modeling_dir = Path(config.output_root) / "modeling"
+    modeling_dir.mkdir(parents=True, exist_ok=True)
+    patterns = [
+        "feature_importance_*.csv",
+        "feature_importance_top.csv",
+        "fold_metrics_*.csv",
+        "feature_directionality_*.csv",
+        "feature_directionality_summary.csv",
+        "feature_directionality_full.csv",
+        "feature_importance_plot.png",
+    ]
+    for pat in patterns:
+        for f in Path.cwd().glob(pat):
+            try:
+                shutil.copy2(f, modeling_dir / f.name)
+            except Exception:
+                pass
+
+
+def step4_classification_and_features():
+    if not os.path.exists("gene_family_matrix.csv"):
+        print("ERROR: gene_family_matrix.csv not found. Run Step 3 first.")
+        return False
+
+    script_path = _find_script("04_classify.py")
+    if not script_path:
+        print("ERROR: 04_classify.py not found in repository.")
+        return False
+
+    print(f"Running classification via {script_path}")
+    try:
+        subprocess.run(["python3", str(script_path)], check=True)
+    except subprocess.CalledProcessError as exc:
+        print(f"ERROR: Classification failed: {exc}")
+        return False
+
+    _collect_modeling_artifacts()
     return True
 
 
@@ -1290,8 +1472,23 @@ def run_comparative_experiment_matrix():
 # ============================================================================
 
 def step5_feature_directionality():
-    print("Step 5 directionality is not used in experiment mode in this script build.")
-    print("If you need it, run your pipeline mode Step 5 from prior pipeline builds.")
+    if not HAS_SCIPY:
+        print("ERROR: scipy is required for directionality analysis.")
+        return False
+
+    script_path = _find_script("05_analyze_feature_directionality.py")
+    if not script_path:
+        print("ERROR: 05_analyze_feature_directionality.py not found in repository.")
+        return False
+
+    print(f"Running feature directionality via {script_path}")
+    try:
+        subprocess.run(["python3", str(script_path)], check=True)
+    except subprocess.CalledProcessError as exc:
+        print(f"ERROR: Directionality failed: {exc}")
+        return False
+
+    _collect_modeling_artifacts()
     return True
 
 
@@ -1322,6 +1519,8 @@ def step8_build_narrative_table():
 # ============================================================================
 
 def main():
+    load_yaml_config()
+
     parser = argparse.ArgumentParser(
         description="Consolidated Pangenome Pipeline + Multi-Arm Experiment Matrix",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
@@ -1362,9 +1561,13 @@ def main():
     parser.add_argument("--non-interactive", action="store_true", help="Non-interactive mode")
 
     parser.add_argument("--output-root", type=str, default="results", help="Output root directory")
+    parser.add_argument("--assembly-quality", type=str, default=None, help="Path to assembly_quality.tsv")
 
     parser.add_argument("--download-jobs", type=int, default=config.download_jobs,
                         help="Parallel downloads for Step 2")
+
+    parser.add_argument("--allow-gca", action="store_true", help="Permit GCA accessions (disable GCF-only filter)")
+    parser.add_argument("--allow-noncomplete", action="store_true", help="Permit non-complete genomes")
 
     # Taxonomy
     parser.add_argument("--taxonomy-cache", type=str, default=None, help="Path to taxonomy cache JSON")
@@ -1403,6 +1606,12 @@ def main():
 
     config.output_root = args.output_root
     Path(config.output_root).mkdir(parents=True, exist_ok=True)
+    config.require_refseq_gcf = not args.allow_gca
+    config.require_complete_genome = not args.allow_noncomplete
+    if args.assembly_quality:
+        config.assembly_quality = args.assembly_quality
+    else:
+        config.assembly_quality = str(Path(config.output_root) / "assemblies" / "assembly_quality.tsv")
 
     config.taxonomy_sleep = args.taxonomy_sleep
     if args.taxonomy_cache is not None:
@@ -1415,6 +1624,12 @@ def main():
     config.paired_test = args.paired_test
     config.experiment_metrics = [m.strip() for m in args.experiment_metrics.split(",") if m.strip()]
 
+    try:
+        check_external_tools()
+    except RuntimeError as exc:
+        print(f"ERROR: {exc}")
+        sys.exit(1)
+
     if args.mode == "comparative_experiment_matrix":
         run_comparative_experiment_matrix()
         return
@@ -1424,6 +1639,7 @@ def main():
         (1, "Prepare Data", step1_prepare_data),
         (2, "Download Proteins", step2_download_proteins),
         (3, "Create Gene Families", step3_create_gene_families),
+        (4, "Classify and Model", step4_classification_and_features),
         (5, "Feature Directionality", step5_feature_directionality),
         (6, "Merge Annotations", step6_merge_annotations),
         (7, "Expand Gene Families", step7_expand_gene_families),
