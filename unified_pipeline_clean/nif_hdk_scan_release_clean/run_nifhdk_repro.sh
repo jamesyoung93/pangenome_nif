@@ -88,7 +88,9 @@ step_metadata(){
   [[ "$with_meta" -eq 1 ]] || return 0
   if ! command -v datasets >/dev/null 2>&1; then
     echo "ERROR: required NCBI 'datasets' CLI not found." >&2
-    echo "Install with 'pip install ncbi-datasets-cli' or see https://www.ncbi.nlm.nih.gov/datasets/docs/v2/download-and-install/." >&2
+    echo "Install via 'mamba install -c conda-forge ncbi-datasets-cli' (or 'conda install ...')," >&2
+    echo "load an HPC module such as 'module load ncbi-datasets', or see" >&2
+    echo "https://www.ncbi.nlm.nih.gov/datasets/docs/v2/download-and-install/." >&2
     exit 1
   fi
   echo "[metadata] fetching NCBI assembly metadata…"
