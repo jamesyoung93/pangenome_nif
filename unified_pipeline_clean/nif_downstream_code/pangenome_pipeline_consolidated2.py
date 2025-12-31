@@ -175,6 +175,7 @@ class PipelineConfig:
 
         # Runtime
         self.non_interactive = False
+        self.mode = "full"  # full|experiment|comparative_experiment_matrix
 
         # Comparative experiment mode
         self.experiment_model = "xgboost"  # xgboost|random_forest|gradient_boosting|logistic_regression
@@ -210,9 +211,27 @@ def load_yaml_config():
                 if isinstance(data, dict):
                     config.require_refseq_gcf = bool(data.get("require_refseq_gcf", config.require_refseq_gcf))
                     config.require_complete_genome = bool(data.get("require_complete_genome", config.require_complete_genome))
+                    if data.get("mode"):
+                        try:
+                            config.mode = resolve_mode(str(data.get("mode")))
+                        except ValueError as exc:
+                            print(f"WARNING: {exc}")
             except Exception as exc:
                 print(f"WARNING: Failed to parse config.yaml at {cand}: {exc}")
             break
+
+
+def resolve_mode(mode_str: str) -> str:
+    """Normalize user-supplied mode strings and enforce allowed values."""
+    if not mode_str:
+        return "full"
+    normalized = str(mode_str).strip().lower()
+    if normalized == "pipeline":
+        normalized = "full"
+    allowed = {"full", "experiment", "comparative_experiment_matrix"}
+    if normalized not in allowed:
+        raise ValueError(f"Invalid mode '{mode_str}'. Choose from: {', '.join(sorted(allowed))}")
+    return normalized
 
 
 def check_external_tools():
@@ -580,14 +599,23 @@ def _collect_modeling_artifacts():
         "feature_directionality_*.csv",
         "feature_directionality_summary.csv",
         "feature_directionality_full.csv",
+        "classification_summary.csv",
+        "roc_curves.png",
+        "narrative_top_features.csv",
         "feature_importance_plot.png",
     ]
+    copied_any = False
     for pat in patterns:
         for f in Path.cwd().glob(pat):
             try:
-                shutil.copy2(f, modeling_dir / f.name)
+                dest = modeling_dir / f.name
+                shutil.copy2(f, dest)
+                print(f"[modeling] copied {f} -> {dest}")
+                copied_any = True
             except Exception:
                 pass
+    if not copied_any:
+        print("[modeling] no modeling artifacts found to copy.")
 
 
 def step4_classification_and_features():
@@ -1515,6 +1543,35 @@ def step8_build_narrative_table():
 
 
 # ============================================================================
+# STEP PLAN HELPERS (for mode-aware execution and testing)
+# ============================================================================
+
+def pipeline_steps_for_mode(mode: str, skip_download: bool = False, start_step: int = 1, end_step: int = 8):
+    mode = resolve_mode(mode)
+    steps = [
+        (1, "Prepare Data", step1_prepare_data),
+        (2, "Download Proteins", step2_download_proteins),
+        (3, "Create Gene Families", step3_create_gene_families),
+        (4, "Classify and Model", step4_classification_and_features),
+        (5, "Feature Directionality", step5_feature_directionality),
+        (6, "Merge Annotations", step6_merge_annotations),
+        (7, "Expand Gene Families", step7_expand_gene_families),
+        (8, "Build Narrative Table", step8_build_narrative_table),
+    ]
+
+    filtered = []
+    for step_num, step_name, step_func in steps:
+        if step_num < start_step or step_num > end_step:
+            continue
+        if skip_download and step_num == 2:
+            continue
+        if mode == "experiment" and step_num == 5:
+            continue
+        filtered.append((step_num, step_name, step_func))
+    return filtered
+
+
+# ============================================================================
 # MAIN
 # ============================================================================
 
@@ -1526,9 +1583,9 @@ def main():
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
 
-    parser.add_argument("--mode", type=str, default="pipeline",
-                        choices=["pipeline", "comparative_experiment_matrix"],
-                        help="Run standard pipeline steps or the comparative experiment matrix")
+    parser.add_argument("--mode", type=str, default=config.mode,
+                        choices=["full", "experiment", "pipeline", "comparative_experiment_matrix"],
+                        help="Run full pipeline (default), lighter experiment mode, or the comparative experiment matrix")
 
     parser.add_argument("--input", type=str, default="nif_hdk_hits_enriched_with_quality_checkm.csv",
                         help="Input CSV file")
@@ -1625,30 +1682,29 @@ def main():
     config.experiment_metrics = [m.strip() for m in args.experiment_metrics.split(",") if m.strip()]
 
     try:
+        config.mode = resolve_mode(args.mode)
+    except ValueError as exc:
+        print(f"ERROR: {exc}")
+        sys.exit(1)
+
+    try:
         check_external_tools()
     except RuntimeError as exc:
         print(f"ERROR: {exc}")
         sys.exit(1)
 
-    if args.mode == "comparative_experiment_matrix":
+    if config.mode == "comparative_experiment_matrix":
         run_comparative_experiment_matrix()
         return
 
     # Standard pipeline execution (steps 1-3 minimal here)
-    steps = [
-        (1, "Prepare Data", step1_prepare_data),
-        (2, "Download Proteins", step2_download_proteins),
-        (3, "Create Gene Families", step3_create_gene_families),
-        (4, "Classify and Model", step4_classification_and_features),
-        (5, "Feature Directionality", step5_feature_directionality),
-        (6, "Merge Annotations", step6_merge_annotations),
-        (7, "Expand Gene Families", step7_expand_gene_families),
-        (8, "Build Narrative Table", step8_build_narrative_table),
-    ]
+    steps = pipeline_steps_for_mode(config.mode, skip_download=args.skip_download,
+                                    start_step=args.start_step, end_step=args.end_step)
+
+    if config.mode == "experiment":
+        print("\nNOTE: Experiment mode selected. Step 5 (directionality) will be skipped and feature directionality outputs will be missing.")
 
     for step_num, step_name, step_func in steps:
-        if step_num < args.start_step or step_num > args.end_step:
-            continue
         if args.skip_download and step_num == 2:
             print(f"Skipping Step {step_num}: {step_name}")
             continue

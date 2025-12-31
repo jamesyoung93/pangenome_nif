@@ -24,7 +24,7 @@ DOWNSTREAM_CV_SEED=42
 DOWNSTREAM_TOP_N=100
 DOWNSTREAM_SKIP_DOWNLOAD=0                          # set 1 if proteins already present
 
-DOWNSTREAM_MODE="pipeline"                          # pipeline|comparative_experiment_matrix
+DOWNSTREAM_MODE="full"                              # full|experiment|comparative_experiment_matrix
 DOWNSTREAM_EXPERIMENT_MODEL="xgboost"              # only used in experiment mode
 # ----------------------------------------------------------------------------
 

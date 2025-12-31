@@ -1,2 +1,3 @@
 require_refseq_gcf: true
 require_complete_genome: true
+mode: full

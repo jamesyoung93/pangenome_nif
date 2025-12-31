@@ -18,11 +18,11 @@ python -m pip install -r requirements.txt
 # set your NCBI contact email for downloads
 export ENTREZ_EMAIL="you@example.org"
 
-# run the unified workflow (defaults: full upstream scan + downstream pipeline mode)
+# run the unified workflow (defaults: full upstream scan + downstream **full** mode)
 ./run_unified_pipeline.sh
 ```
 
-Outputs land in `unified_pipeline_run/results/`.
+Outputs land in `unified_pipeline_run/results/`. Modeling artifacts are copied into `unified_pipeline_run/results/modeling/`.
 
 ### Genome filtering policy
 
@@ -33,14 +33,15 @@ Outputs land in `unified_pipeline_run/results/`.
   - `filter_summary.json`
 - To relax the defaults, pass `--allow-gca` and/or `--allow-noncomplete` through downstream args (or edit `config.yaml`).
 
-### Modeling outputs
+### Modes and modeling outputs
 
-- The unified run now executes the full classification + directionality steps (`04_classify.py` and `05_analyze_feature_directionality.py`).
+- The default **full** mode runs the complete modeling flow (classification + directionality) via `04_classify.py` and `05_analyze_feature_directionality.py`.
 - Key artifacts are copied into `unified_pipeline_run/results/modeling/`:
-  - `feature_importance_top.csv`, `feature_importance_*.csv`, `fold_metrics_*.csv`
-  - `feature_directionality_*.csv`, `feature_directionality_summary.csv`
-  - plots such as `feature_importance_plot.png`
-- The default mode is full pipeline; pass `--mode experiment` to enable comparative experiment matrix mode explicitly.
+  - `classification_summary.csv`, `feature_importance_top.csv`, `feature_importance_*.csv`, `fold_metrics_*.csv`, `roc_curves.png`
+  - `feature_directionality_full.csv`, `feature_directionality_summary.csv`, `feature_directionality_*.csv`
+  - `narrative_top_features.csv` and plots such as `feature_importance_plot.png`
+- Use **experiment** mode to skip heavy directionality (Step 5). The pipeline will print a warning and directionality outputs will be absent.
+- The **comparative_experiment_matrix** mode remains available for the multi-arm benchmarking workflow.
 
 ## Customization
 
