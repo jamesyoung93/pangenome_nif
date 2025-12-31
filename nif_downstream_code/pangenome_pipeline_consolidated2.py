@@ -1327,9 +1327,18 @@ def main():
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
 
-    parser.add_argument("--mode", type=str, default="pipeline",
-                        choices=["pipeline", "comparative_experiment_matrix"],
-                        help="Run standard pipeline steps or the comparative experiment matrix")
+    def _parse_mode(value: str) -> str:
+        mode = (value or "").strip().lower()
+        if mode == "full":  # backwards-compatible alias from older wrappers
+            return "pipeline"
+        if mode in {"pipeline", "comparative_experiment_matrix"}:
+            return mode
+        raise argparse.ArgumentTypeError(
+            "Mode must be 'pipeline' (alias 'full') or 'comparative_experiment_matrix'"
+        )
+
+    parser.add_argument("--mode", type=_parse_mode, default="pipeline",
+                        help="Run standard pipeline steps (pipeline, alias full) or the comparative experiment matrix")
 
     parser.add_argument("--input", type=str, default="nif_hdk_hits_enriched_with_quality_checkm.csv",
                         help="Input CSV file")
